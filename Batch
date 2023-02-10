@@ -1,0 +1,3755 @@
+md "C:\scripts"
+md "C:\GENESIS"
+md "C:\GENESIS\SQL"
+md "C:\GENESIS\TEMP"
+md "%userprofile%\AppData\Local\GENESIS"
+md "%userprofile%\AppData\Local\GENESIS\SQL"
+md "%userprofile%\AppData\Local\GENESIS\TEMP"
+md "C:\GENESIS\INSTALL"
+md "C:\GENESIS\INSTALL\SQL EXPRESS 2008"
+md "C:\GENESIS\INSTALL\SQL EXPRESS 2014"
+md "%userprofile%\Documents\scripts"
+
+:top
+cls
+@echo off
+ECHO =====================================
+ECHO == WELCOME TO GENESIS INSTALLATION ==
+ECHO ==        version dos 9.24.21      ==
+ECHO =====================================
+ECHO.
+ECHO Please Provide The Following DETAIL
+ECHO.
+set /p SERVER IP=SERVER IP:
+if exist "\\%SERVER IP%\v\GENESIS" goto fnsf
+set /p NETSHARE=NETWORK SHARED FOLDER NAME:
+goto dnfns
+:fnsf
+set NETSHARE=V
+:dnfns
+set /p NETDRIVE=NETWORK DRIVE LETTER (DEFAULT IS V:\):
+@echo PLEASE WAIT CONNECTING TO IP ADDRESS %SERVER IP%
+ping 127.0.0.1 -n 2 > nul
+if exist "\\%SERVER IP%\%NETSHARE%\GENESIS" goto NEXT1
+
+CLS
+@echo CANNOT ACCESS THE IP GIVEN
+ping 127.0.0.1 -n 4 > nul
+goto top
+:NEXT1
+
+@echo ***** MAPING DRIVES *****
+if exist "%NETDRIVE%:\GENESIS" goto NEXT2
+net use %NETDRIVE%: /d /y
+net use %NETDRIVE%: "\\%SERVER IP%\%NETSHARE%" /P:Yes
+if exist "%NETDRIVE%:\GENESIS" goto NEXT2
+
+@echo ***** FAILED TO MAP NETWORK DRIVE *****
+ping 127.0.0.1 -n 4 > nul
+goto top
+
+:NEXT2
+net time \\%SERVER IP% /set /yes
+CLS
+:MENU
+CLS
+COLOR 07
+ECHO.
+ECHO ........................................................................
+ECHO SELECT YOUR OPTION BY TYPING THE CORESPONDING NUMBER AND THEN ENTER KEY.
+ECHO ........................................................................
+ECHO.
+ECHO  1 - EXTRACT GENESIS TO LOCAL COMPUTER
+ECHO  2 - INSTALL SQL PREREQUISITES FOR WINDOWS
+ECHO  3 - INSTALL SQL Express 2008
+ECHO  4 - INSTALL SQL Express 2014
+ECHO  5 - CREATE GENESIS DB's
+ECHO  6 - SECURITY DOOR SETTUP
+ECHO  7 - FINISH INSTALL
+ECHO  8 - DELETE GENESIS EXTRACTED FILES
+ECHO  9 - SERVER OPTIONS
+ECHO 99 - CLOSE INSTALLER
+
+ECHO.
+SET /P option=Select a task then press ENTER:
+IF %option%==1 GOTO GENESIS COPY
+IF %option%==2 GOTO PREREQUISITES
+IF %option%==3 GOTO Express08
+IF %option%==4 GOTO Express14
+IF %option%==5 GOTO CreateDB
+IF %option%==6 GOTO SECDOOR
+IF %option%==7 GOTO FINISH
+IF %option%==8 GOTO DELETEFILES
+IF %option%==9 GOTO SERVEROPTIONS
+IF %option%==99 GOTO EOD
+IF %option%=="%option%" GOTO MENU
+goto MENU
+
+:SERVEROPTIONS
+CLS
+ECHO.
+ECHO ........................................................................
+ECHO SELECT YOUR OPTION BY TYPING THE CORESPONDING NUMBER AND THEN ENTER KEY.
+ECHO ........................................................................
+ECHO.
+ECHO  1 - INSTALL SQL EXPRESS 2014 AS SERVER
+ECHO  2 - CREATE SERVER BAT FILES
+ECHO  3 - CREATE GENESIS SERVICES
+ECHO  4 - CREATE SERVER DB'S
+ECHO  5 - CREATE BACKUP
+ECHO  6 - CREATE UPDATE GENESIS FILES
+ECHO  7 - CHANGE PC NAME
+ECHO  8 - NEXUS SETUP
+ECHO 99 - MAIN MENU
+
+ECHO.
+SET /P option=Select a task then press ENTER:
+IF %option%==1 GOTO SERVER
+IF %option%==2 GOTO SRVBATFILES
+IF %option%==3 GOTO GENSERVICES
+IF %option%==4 GOTO CreateSDB
+IF %option%==5 GOTO CREATEBACKUP
+IF %option%==6 GOTO GENUPDATE
+IF %option%==7 GOTO PC NAME CHANGE
+IF %option%==8 GOTO CreateNEXUSDB
+IF %option%==99 GOTO MENU
+IF %option%=="%option%" GOTO SERVEROPTIONS
+goto SERVEROPTIONS
+
+:EOD
+@ECHO CLOSE INSTALLER
+ping 127.0.0.1 -n 2 > nul
+exit
+
+=============================================================================================================
+:GENESIS COPY
+COLOR 07
+cls
+
+@echo ***** EXTRACT GENESIS OPTIONS? *****(Y/N)
+
+ECHO 1 - EXTRACT GENESIS FOR WINDOWS XP (ALL USERS)
+ECHO 2 - EXTRACT GENESIS FOR WINDOWS 7,8,10 and TS SERVERS (USER SPECIFIC)
+ECHO 3 - BACK TO MAIN MENU
+
+ECHO.
+SET /P option=Select The Location and press ENTER:
+IF %option%==1 GOTO ALLUSERS
+IF %option%==2 GOTO THISUSER
+IF %option%==3 GOTO MENU
+
+:ALLUSERS
+if exist "%userprofile%\AppData\Local\GENESIS\genMENU.exe" goto fd1
+goto dnf1
+:fd1
+cls
+COLOR 0C
+@echo =================================
+@echo ERROR Genesis files found on user
+@echo =================================
+pause
+goto GENESIS COPY
+:dnf1
+cls
+@echo ***** CREATING FOLDERS AND COPYING FILES *****
+echo 0%
+>>c:\scripts\installlog.txt (
+@echo ***** CREATING FOLDERS AND COPYING FILES *****
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\*.exe" "C:\GENESIS" /D /Y /C /R /L
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES\SQL EXPRESS 2008" "C:\GENESIS\INSTALL\SQL EXPRESS 2008" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES\SQL EXPRESS 2014" "C:\GENESIS\INSTALL\SQL EXPRESS 2014" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES" "C:\GENESIS\INSTALL" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES\genSYNC.BAT" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES\RunLogon.bat" "%allusersprofile%\Desktop" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES\Synctime.bat" "c:\scripts" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\Genesis\GENESIS INSTALL FILES\REGION.reg" "C:\Genesis\INSTALL" /D /y
+::xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES\GENESISLogon.bat" "%allusersprofile%\Start Menu\Programs\StartUp\GENESISLogon.bat" /D /y )
+copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES\GENESISLogon.bat" "%allusersprofile%\Start Menu\Programs\StartUp\GENESISLogon.bat" /D /y )
+echo 10%
+>>c:\scripts\installlog.txt (
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genmenu.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genpur.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genbud.exe" "C:\GENESIS" /D /y )
+echo 20%
+>>c:\scripts\installlog.txt (
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genrtb.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genrtn.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genutl.exe" "C:\GENESIS" /D /y )
+echo 30%
+>>c:\scripts\installlog.txt (
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genvpn.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genset.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\gengsm.exe" "C:\GENESIS" /D /y )
+echo 40%
+>>c:\scripts\installlog.txt (
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genglg.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\gendeb.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genfix.exe" "C:\GENESIS" /D /y )
+echo 50%
+>>c:\scripts\installlog.txt (
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\gensec.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genstk.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\gencrd.exe" "C:\GENESIS" /D /y )
+echo 60%
+>>c:\scripts\installlog.txt (
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\gencof.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genpos.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\gentil.exe" "C:\GENESIS" /D /y )
+echo 70%
+>>c:\scripts\installlog.txt (
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genrep.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\geneod.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genHELP.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genQUE.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genSYNC.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genlsm.exe" "C:\GENESIS" /D /y )
+echo 80%
+>>c:\scripts\installlog.txt (
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genpcn.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genTSH.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genSNL.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genSNF.exe" "C:\GENESIS" /D /y )
+echo 90%
+>>c:\scripts\installlog.txt (
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genTLQ.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genSVM.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genSER.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genMacReg.exe" "C:\GENESIS" /D /y )
+echo 100%
+>>c:\scripts\installlog.txt (
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genOTL.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genOTS.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genOTR.exe" "C:\GENESIS" /D /y 
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genOCO.exe" "C:\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genVWS.exe" "C:\GENESIS" /D /y )
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%allusersprofile%\Desktop\GENESIS MENU.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "C:\GENESIS\genMENU.exe" >> CreateShortcut.vbs
+echo olink.workingdirectory = "C:\GENESIS" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\genMENU.exe" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%allusersprofile%\Desktop\GENESIS TILL.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "C:\GENESIS\genTIL.exe" >> CreateShortcut.vbs
+echo olink.workingdirectory = "C:\GENESIS" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\genTIL.exe" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%allusersprofile%\Desktop\GENESIS OFFLINE TILL.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "C:\GENESIS\genOTL.exe" >> CreateShortcut.vbs
+echo olink.workingdirectory = "C:\GENESIS" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\genOTL.exe" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+echo 100%
+ping 127.0.0.1 -n 3 > nul
+goto MENU
+
+:THISUSER
+if exist "C:\GENESIS\genMENU.exe" goto fd2
+goto dnf2
+:fd2
+cls
+COLOR 0C
+@echo =================================
+@echo ERROR Genesis files found on C:\
+@echo =================================
+pause
+goto GENESIS COPY
+:dnf2
+cls
+@echo ***** CREATING FOLDERS AND COPYING FILES *****
+echo 0%
+>>c:\scripts\installlog.txt (
+@echo ***** CREATING FOLDERS AND COPYING FILES *****
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES\SQL EXPRESS 2008" "C:\GENESIS\INSTALL\SQL EXPRESS 2008" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES\SQL EXPRESS 2014" "C:\GENESIS\INSTALL\SQL EXPRESS 2014" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES" "C:\GENESIS\INSTALL" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES\genSYNC.BAT" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES\RunLogonUSER.bat" "%userprofile%\Desktop" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES\Synctime.bat" "c:\scripts" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\Genesis\GENESIS INSTALL FILES\REGION.reg" "C:\Genesis\INSTALL" /D /y
+::xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES\GENESISLogonUser.bat" "%userprofile%\Start Menu\Programs\StartUp\GENESISLogonUser.bat" /D /y )
+copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES\GENESISLogonUser.bat" "%userprofile%\Start Menu\Programs\StartUp\GENESISLogonUser.bat" /D /y )
+echo 10%
+>>c:\scripts\installlog.txt (
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genmenu.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genpur.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genbud.exe" "%userprofile%\AppData\Local\GENESIS" /D /y )
+echo 20%
+>>c:\scripts\installlog.txt (
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genrtb.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genrtn.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genutl.exe" "%userprofile%\AppData\Local\GENESIS" /D /y )
+echo 30%
+>>c:\scripts\installlog.txt (
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genvpn.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genset.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\gengsm.exe" "%userprofile%\AppData\Local\GENESIS" /D /y )
+echo 40%
+>>c:\scripts\installlog.txt (
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genglg.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\gendeb.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genfix.exe" "%userprofile%\AppData\Local\GENESIS" /D /y )
+echo 50%
+>>c:\scripts\installlog.txt (
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\gensec.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genstk.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\gencrd.exe" "%userprofile%\AppData\Local\GENESIS" /D /y )
+echo 60%
+>>c:\scripts\installlog.txt (
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\gencof.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genpos.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\gentil.exe" "%userprofile%\AppData\Local\GENESIS" /D /y )
+echo 70%
+>>c:\scripts\installlog.txt (
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genrep.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\geneod.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genHELP.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genQUE.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genSYNC.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genlsm.exe" "%userprofile%\AppData\Local\GENESIS" /D /y )
+echo 80%
+>>c:\scripts\installlog.txt (
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genpcn.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genSNL.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genSNF.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genTLQ.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genSVM.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genSER.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genTSH.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genMacReg.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genOTL.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genOTS.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genOTR.exe" "%userprofile%\AppData\Local\GENESIS" /D /y 
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genOCO.exe" "%userprofile%\AppData\Local\GENESIS" /D /y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genVWS.exe" "%userprofile%\AppData\Local\GENESIS" /D /y )
+echo 100%
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%userprofile%\Desktop\GENESIS MENU.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "%userprofile%\AppData\Local\GENESIS\genMENU.exe" >> CreateShortcut.vbs
+echo olink.workingdirectory = "%userprofile%\AppData\Local\GENESIS" >> CreateShortcut.vbs
+echo olink.IconLocation ="%userprofile%\AppData\Local\GENESIS\genMENU.exe" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%userprofile%\Desktop\GENESIS TILL.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "%userprofile%\AppData\Local\GENESIS\genTIL.exe" >> CreateShortcut.vbs
+echo olink.workingdirectory = "%userprofile%\AppData\Local\GENESIS" >> CreateShortcut.vbs
+echo olink.IconLocation ="%userprofile%\AppData\Local\GENESIS\genTIL.exe" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%userprofile%\Desktop\GENESIS OFFLINE TILL.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "%userprofile%\AppData\Local\GENESIS\genOTL.exe" >> CreateShortcut.vbs
+echo olink.workingdirectory = "%userprofile%\AppData\Local\GENESIS" >> CreateShortcut.vbs
+echo olink.IconLocation ="%userprofile%\AppData\Local\GENESIS\genOTL.exe" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+ping 127.0.0.1 -n 3 > nul
+
+//offline setup
+
+goto MENU
+
+=============================================================================================================
+:PC NAME CHANGE
+cls
+@echo ***** DO YOU WHANT TO CHANGE PC NAME? *****(Y/N)
+set INPUT=
+set /P INPUT=TYPE INPUT: %=%
+If %INPUT% == y goto yes2
+If %INPUT% == Y goto yes2
+If %INPUT% == %INPUT% goto MENU
+:yes2
+set /p id=NEW PC NAME:
+@echo %id%
+wmic computersystem  where caption="%computername%" rename "%id%" >>"c:\scripts\installlog.txt"
+shutdown -r -t 3
+exit
+=============================================================================================================
+:PREREQUISITES
+cls
+@echo ***** INSTALL SQL PREREQUISITES? *****(Y/N)
+set INPUT=
+set /P INPUT=TYPE INPUT: %=%
+If %INPUT% == y goto yes5
+If %INPUT% == Y goto yes5
+If %INPUT% == %INPUT% goto MENU
+:yes5
+echo. 
+@echo ***** INSTALLING WINDOWS INSTALLER 4.5 *****
+@echo ***** INSTALLING WINDOWS INSTALLER 4.5 ***** >>"c:\scripts\installlog.txt"
+"C:\GENESIS\INSTALL\Windows Installer v4.5.exe" /passive /log:"c:\scripts\installlog.txt"
+echo.
+echo.
+@echo ***** INSTALLING POWERSHELL *****
+@echo ***** INSTALLING POWERSHELL ***** >>"c:\scripts\installlog.txt"
+"C:\GENESIS\INSTALL\WindowsXP-KB968930-x86-ENG.exe" /passive /log:"c:\scripts\installlog.txt"
+echo.
+echo.
+@echo ***** INSTALLING .NetFrameworks 3.5 *****
+@echo ***** INSTALLING .NetFrameworks 3.5 ***** >>"c:\scripts\installlog.txt"
+"C:\GENESIS\INSTALL\dotnetfx35.exe" /passive /log:"c:\scripts\installlog.txt"
+goto MENU
+=============================================================================================================
+:Express08
+cls
+@echo ***** DO YOU WANT TO INSTALL SQL 2008? *****(Y/N)
+set INPUT=
+set /P INPUT=TYPE INPUT: %=%
+If %INPUT% == y goto yes1
+If %INPUT% == Y goto yes1
+If %INPUT% == %INPUT% goto MENU
+:yes1
+cls
+@echo ***** NOW INSTALING SQL EXPRESS 2008 *****
+@echo ***** NOW INSTALING SQL EXPRESS 2008 ***** >>"c:\scripts\installlog.txt"
+"C:\GENESIS\INSTALL\SQL EXPRESS 2008\SQLEXPRWT_x86_ENU.exe" /Q /ACTION=Install /FEATURES=SQLENGINE,SSMS /INSTANCENAME=MSSQLServer /SECURITYMODE=SQL /SAPWD="Pa$$w0rD" /SQLSYSADMINACCOUNTS="%COMPUTERNAME%\%USERNAME%" /SQLSVCACCOUNT="NT AUTHORITY\SYSTEM" /TCPENABLED=1 /NPENABLED=1 /ERRORREPORTING=0 /IACCEPTSQLSERVERLICENSETERMS
+ping 127.0.0.1 -n 3 > nul
+@echo *****STARTING SQL SERVICE***** >>"c:\scripts\installlog.txt"
+for /F "tokens=3 delims=: " %%H in ('sc query "MSSQLSERVER" ^| findstr "STATE"') do (if /I "%%H" NEQ "RUNNING" (net start "MSSQLSERVER")) >>"c:\scripts\installlog.txt"
+ping 127.0.0.1 -n 3 > nul
+"\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES\GENESIS-INSTALL.BAT"
+exit
+=============================================================================================================
+:Express14
+cls
+@echo ***** DO YOU WANT TO INSTALL SQL 2014? *****(Y/N)
+set INPUT=
+set /P INPUT=TYPE INPUT: %=%
+If %INPUT%== y goto yes1
+If %INPUT%== Y goto yes1
+If %INPUT%==%INPUT% goto MENU
+:yes1
+cls
+@echo ***** NOW INSTALING SQL EXPRESS 2014 *****
+@echo ***** NOW INSTALING SQL EXPRESS 2014 ***** >>"c:\scripts\installlog.txt"
+"C:\GENESIS\INSTALL\SQL EXPRESS 2014\SQLEXPRWT_x86_ENU.exe" /Q /ACTION=Install /FEATURES=SQLENGINE,SSMS /INSTANCENAME=MSSQLServer /SECURITYMODE=SQL /SAPWD="Pa$$w0rD" /SQLSYSADMINACCOUNTS="%COMPUTERNAME%\%USERNAME%" /SQLSVCACCOUNT="NT AUTHORITY\SYSTEM" /TCPENABLED=1 /NPENABLED=1 /ERRORREPORTING=0 /IACCEPTSQLSERVERLICENSETERMS
+ping 127.0.0.1 -n 3 > nul
+@echo *****STARTING SQL SERVICE***** >>"c:\scripts\installlog.txt"
+for /F "tokens=3 delims=: " %%H in ('sc query "MSSQLSERVER" ^| findstr "STATE"') do (if /I "%%H" NEQ "RUNNING" (net start "MSSQLSERVER")) >>"c:\scripts\installlog.txt"
+ping 127.0.0.1 -n 3 > nul
+"\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES\GENESIS-INSTALL.BAT"
+exit
+=============================================================================================================
+:SERVER
+cls
+@echo ***** DO YOU WANT TO INSTALL SQL EXPRESS 2014 AS SERVER? *****(Y/N)
+set INPUT=
+set /P INPUT=TYPE INPUT: %=%
+If %INPUT%== y goto yes1
+If %INPUT%== Y goto yes1
+If %INPUT%== %INPUT% goto MENU
+:yes1
+cls
+@echo ***** NOW INSTALING SQL EXPRESS 2014 FOR SERVER*****
+@echo ***** NOW INSTALING SQL EXPRESS 2014 FOR SERVER***** >>"c:\scripts\installlog.txt"
+"C:\GENESIS\INSTALL\SQL EXPRESS 2014\SQLEXPRWT_x86_ENU.exe" /Q /ACTION=Install /FEATURES=SQLENGINE,SSMS /INSTANCENAME=MSSQLServer /SECURITYMODE=SQL /SAPWD="Pa$$w0rD" /SQLSYSADMINACCOUNTS="%COMPUTERNAME%\%USERNAME%" /SQLSVCACCOUNT="NT AUTHORITY\SYSTEM" /SQLBACKUPDIR=C:\%NETSHARE%\GENESIS\SQLBACKUPS /SQLTEMPDBDIR=C:\%NETSHARE%\GENESIS\TEMP /SQLUSERDBDIR=C:\%NETSHARE%\GENESIS\SQLDB\ /SQLUSERDBLOGDIR=C:\%NETSHARE%\GENESIS\SQLLOG /TCPENABLED=1 /NPENABLED=1 /ERRORREPORTING=0 /IACCEPTSQLSERVERLICENSETERMS
+ping 127.0.0.1 -n 3 > nul
+@echo *****STARTING SQL SERVICE***** >>"c:\scripts\installlog.txt"
+for /F "tokens=3 delims=: " %%H in ('sc query "MSSQLSERVER" ^| findstr "STATE"') do (if /I "%%H" NEQ "RUNNING" (net start "MSSQLSERVER")) >>"c:\scripts\installlog.txt"
+ping 127.0.0.1 -n 3 > nul
+"\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES\GENESIS-INSTALL.BAT"
+exit
+=============================================================================================================
+:CreateDB
+cls
+@echo ***** CREATE GENESIS DATABASE? *****(Y/N)
+set INPUT=
+set /P INPUT=TYPE INPUT: %=%
+If %INPUT%== y goto yes1
+If %INPUT%== Y goto yes1
+If %INPUT%==%INPUT% goto MENU
+:yes1
+@echo ***** CREATEING GENESIS DATABASE ***** >>"c:\scripts\installlog.txt"
+sqlcmd -U sa -P Pa$$w0rD -S (local) -Q "CREATE DATABASE [GENESIS-TILL]">>"c:\scripts\installlog.txt"
+goto MENU
+==============================================================================================================
+
+=============================================================================================================                                                                        ::NEW SECTION
+:CreateNEXUSDB
+cls
+@echo ***** CREATE GENESIS NEXUS DATABASE? *****(Y/N)
+set INPUT=
+set /P INPUT=TYPE INPUT: %=%
+If %INPUT%== y goto yes1
+If %INPUT%== Y goto yes1
+If %INPUT%==%INPUT% goto MENU
+:yes1
+del "c:\scripts\nexus.txt"
+@echo ***** CREATEING GENESIS NEXUS DATABASE AND NEXUS USER ***** >>"c:\scripts\nexus.txt"
+@ECHO OFF
+ECHO. > MultiLine.sql
+
+::--THIS WILL CREATE YOUR DATABASE IF ITS NOT CREATED ALREADY.
+::--STEP 1
+
+ECHO --THIS IS CREATING NEXUS SQL DATABASE
+
+ECHO USE master >> MultiLine.sql
+ECHO GO >> MultiLine.sql
+ECHO IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = 'NEXUS') >> MultiLine.sql
+ECHO BEGIN >> MultiLine.sql
+ECHO CREATE DATABASE NEXUS >> MultiLine.sql
+ECHO END >> MultiLine.sql
+
+ECHO.
+sqlcmd -S (LOCAL) -E -i MultiLine.sql >> "c:\scripts\nexus.txt"
+
+::--THIS WILL CREATE YOUR USER FOR NEXUS READ ONLY.
+::--STEP 2
+
+ECHO --THIS IS CREATING NEXUS SQL USER
+
+ECHO DECLARE @DatabaseName NVARCHAR(100) >> MultiLine.sql
+ECHO DECLARE @SQL NVARCHAR(max) >> MultiLine.sql
+ECHO DECLARE @User VARCHAR(64) >> MultiLine.sql
+ECHO SET @User = 'NEXUS' >> MultiLine.sql
+ECHO create login NEXUS with password='D0gm@t1x' ,CHECK_EXPIRATION = OFF,  CHECK_POLICY = OFF; >> MultiLine.sql
+ECHO DECLARE Grant_Permission CURSOR LOCAL FOR >> MultiLine.sql
+ECHO SELECT name FROM sys.databases >> MultiLine.sql
+ECHO WHERE name NOT IN ('master','model','msdb','tempdb','distribution') >> MultiLine.sql
+ECHO OPEN Grant_Permission >> MultiLine.sql
+ECHO FETCH NEXT FROM Grant_Permission INTO @DatabaseName >> MultiLine.sql
+ECHO WHILE @@FETCH_STATUS = 0 >> MultiLine.sql
+ECHO BEGIN >> MultiLine.sql
+ECHO SELECT @SQL = 'USE '+ '[' + @DatabaseName + ']' +'; '+ 'CREATE USER ' + @User + >> MultiLine.sql
+ECHO ' FOR LOGIN ' + @User + '; EXEC sp_addrolemember N''db_datareader'', >> MultiLine.sql
+ECHO ' + @User + ''; >> MultiLine.sql
+ECHO PRINT @SQL >> MultiLine.sql
+ECHO EXEC sp_executesql @SQL >> MultiLine.sql
+ECHO FETCH NEXT FROM Grant_Permission INTO @DatabaseName >> MultiLine.sql
+ECHO END >> MultiLine.sql
+ECHO CLOSE Grant_Permission >> MultiLine.sql
+ECHO DEALLOCATE Grant_Permission >> MultiLine.sql
+
+ECHO.
+sqlcmd -S (LOCAL) -E -i MultiLine.sql >> "c:\scripts\nexus.txt"
+
+::--THIS WILL CREATE YOUR TABLE IN THE DATABASE.
+::--STEP 3
+
+:NEXUSSERVICE
+cls
+ECHO =========================================
+ECHO PLEASE PROVIDE SERVER DETAIL THATS NEEDED
+ECHO =========================================
+set /p StoreDB=STORE DATABASE:
+set /p CO=GENESIS COMPANY CODE:
+set /p BRANCH=GENESIS BRANCH CODE:
+set /p StoreName=STORE NAME:
+
+ECHO USE [NEXUS] >> MultiLine.sql
+ECHO GO >> MultiLine.sql
+ECHO DECLARE @wStoreDB        VARCHAR(30) >> MultiLine.sql
+ECHO DECLARE @wCO             VARCHAR(30) >> MultiLine.sql
+ECHO DECLARE @wBranch         VARCHAR(10) >> MultiLine.sql
+ECHO DECLARE @StorProc        VARCHAR(50)  >> MultiLine.sql
+ECHO DECLARE @EMailTo         NVARCHAR(350)  >> MultiLine.sql
+ECHO DECLARE @EMailCC         NVARCHAR(350)  >> MultiLine.sql
+ECHO DECLARE @EMailBCC        NVARCHAR(350)  >> MultiLine.sql
+ECHO DECLARE @StoreName       NVARCHAR(30)  >> MultiLine.sql
+ECHO DECLARE @wCount          NVARCHAR(10) >> MultiLine.sql
+ECHO DECLARE @GPCheck         NVARCHAR(3)  >> MultiLine.sql
+ECHO DECLARE @DataSource      NVARCHAR(30)  >> MultiLine.sql
+ECHO DECLARE @rmtUser         NVARCHAR (30)  >> MultiLine.sql
+ECHO DECLARE @rmtPassword     NVARCHAR (30)  >> MultiLine.sql
+ECHO SET @wStoreDB            = '%StoreDB%'                                                                                              --STORE DATABASE >> MultiLine.sql
+ECHO SET @wCO                 = '%CO%'                                                                                                   --COMPANY CODE >> MultiLine.sql
+ECHO SET @wBranch             = '%BRANCH%'                                                                                               --BRANCH CODE >> MultiLine.sql
+ECHO SET @EMailTo             = ''                                                                                                       --STORE MANAGERS ONLY >> MultiLine.sql
+ECHO SET @EMailCC             = ''                                                                                                       --OPTINAL STORE MANAGERS >> MultiLine.sql
+ECHO SET @EMailBCC            = 'pg.mouton@mrjc.co.za;riaan.jacobs.co.za'                                                                --BCC MRJ MEMBERS ONLY >> MultiLine.sql
+ECHO SET @StoreName           = '%StoreName%'                                                                                            --STORE NAME (FRIENDLY NAME) >> MultiLine.sql
+ECHO SET @wCount              = '1'                                                                                                      --START COUNT DO NOT CHANGE IF ONLY ONE STORE >> MultiLine.sql
+ECHO SET @GPCheck             = ''                                                                                                       --GP BELOW PERCENTAGE >> MultiLine.sql
+ECHO SET @DataSource          = ''                                                                                                       --EXTERNAL SERVER >> MultiLine.sql
+ECHO SET @rmtUser             = ''                                                                                                       --EXTERNAL SERVER SQL USER >> MultiLine.sql
+ECHO SET @rmtPassword         = ''                                                                                                       --EXTERNAL SERVER SQL PASSWORD >> MultiLine.sql
+ECHO CREATE TABLE [dbo].[Nexus]( >> MultiLine.sql
+ECHO [StoreDB] [nvarchar](30) NULL, >> MultiLine.sql
+ECHO [Company] [nvarchar](30) NULL, >> MultiLine.sql
+ECHO [Branch] [nvarchar](10) NULL, >> MultiLine.sql
+ECHO [StorProc] [varchar](50) NULL, >> MultiLine.sql
+ECHO [EMailTo] [nvarchar](350) NULL, >> MultiLine.sql
+ECHO [EMailCC] [nvarchar](350) NULL, >> MultiLine.sql
+ECHO [EMailBCC] [nvarchar](350) NULL, >> MultiLine.sql
+ECHO [StoreName] [nvarchar](30) NULL, >> MultiLine.sql
+ECHO [wCount] [int] NULL, >> MultiLine.sql
+ECHO [GPCheck] [nvarchar](3) NULL, >> MultiLine.sql
+ECHO [DataSource] [nvarchar](30) NULL, >> MultiLine.sql
+ECHO [rmtUser] [nvarchar](30) NULL, >> MultiLine.sql
+ECHO [rmtPassword] [nvarchar](30) NULL >> MultiLine.sql
+ECHO ) ON [PRIMARY] >> MultiLine.sql
+ECHO INSERT INTO [dbo].[Nexus]  >> MultiLine.sql
+ECHO ([StoreDB], [Company],[Branch],[StorProc],[EMailTo],[EMailCC],[EMailBCC],[StoreName],[wCount],[GPCheck],[DataSource],[rmtUser],[rmtPassword])  >> MultiLine.sql
+ECHO VALUES >> MultiLine.sql
+ECHO (@wStoreDB,@wCO,@wBranch,'NexusSalesStats',@EMailTo,@EMailCC,@EMailBCC,@StoreName,@wCount,@GPCheck,@DataSource,@rmtUser,@rmtPassword), >> MultiLine.sql
+ECHO (@wStoreDB,@wCO,@wBranch,'NexusCheckOnhandBalance',@EMailTo,@EMailCC,@EMailBCC,@StoreName,@wCount,@GPCheck,@DataSource,@rmtUser,@rmtPassword); >> MultiLine.sql
+
+ECHO.
+sqlcmd -S (LOCAL) -E -i MultiLine.sql >> "c:\scripts\nexus.txt"
+
+ECHO --THIS IS POPULATION THE DATABASE
+
+del MultiLine.sql
+
+goto MENU
+==============================================================================================================
+
+:CreateSDB
+cls
+@echo ***** Create SERVER DB'S? *****(Y/N)
+set INPUT=
+set /P INPUT=TYPE INPUT: %=%
+If %INPUT%== y goto yes1
+If %INPUT%== Y goto yes1
+If %INPUT%==%INPUT% goto MENU
+
+:yes1
+set /p LOCALDB=LOCAL DB NAME:
+@echo %LOCALDB%
+
+@ECHO ****** Creating SERVER DBs ******
+@ECHO ****** Creating SERVER DBs ****** >>"c:\scripts\installlog.txt"
+sqlcmd -U sa -P Pa$$w0rD -S (local) -Q "CREATE DATABASE [GENESISCOMMON]">>"c:\scripts\installlog.txt"
+sqlcmd -U sa -P Pa$$w0rD -S (local) -Q "CREATE DATABASE [%LOCALDB%]" >>"c:\scripts\installlog.txt"
+
+@echo ***** DATABASES CREATED *****>>"c:\scripts\installlog.txt"
+@echo ***** DATABASES CREATED *****
+ping 127.0.0.1 -n 3 > nul
+goto MENU
+=============================================================================================================
+:DELETEFILES
+cls
+@echo ***** DELETE GENESIS OPTIONS? *****(Y/N)
+ECHO 1 - DELETE GENESIS FILE ON PC
+ECHO 2 - DELETE GENESIS FILES CURRENT USER (FOR TS CLIENTS)
+ECHO 3 - BACK TO MAIN MENU
+
+ECHO.
+SET /P option=Select The Location and press ENTER:
+IF %option%==1 GOTO PC
+IF %option%==2 GOTO CURRENTUSER
+IF %option%==3 GOTO MENU
+
+:PC
+@echo ***** DELETE GENESIS FILES ON PC *****
+@echo ***** DELETE GENESIS FILES ON PC *****>>"c:\scripts\installlog.txt"
+del /q "C:\GENESIS">>"c:\scripts\installlog.txt"
+del /q "%allusersprofile%\Start Menu\Programs\StartUp\GenesisLogon.bat">>"c:\scripts\installlog.txt"
+del /q "%allusersprofile%\Start Menu\Programs\StartUp\SECURITY EXIT.lnk">>"c:\scripts\installlog.txt"
+del /q "%allusersprofile%\Desktop\GENESIS MENU.lnk">>"c:\scripts\installlog.txt"
+del /q "%allusersprofile%\Desktop\GENESIS TILL.lnk">>"c:\scripts\installlog.txt"
+del /q "%allusersprofile%\Desktop\GENESIS OFFLINE TILL.lnk">>"c:\scripts\installlog.txt"
+del /q "%allusersprofile%\Desktop\RunLogon.bat">>"c:\scripts\installlog.txt"
+del /q "%allusersprofile%\Desktop\SECURITY EXIT DOOR.lnk">>"c:\scripts\installlog.txt"
+del /q "%userprofile%\Desktop\UPDATE-GENESIS.lnk">>"c:\scripts\installlog.txt"
+GOTO MENU
+
+:CURRENTUSER
+@echo ***** DELETE GENESIS FILES ON USER *****
+@echo ***** DELETE GENESIS FILES ON USER *****>>"c:\scripts\installlog.txt"
+del /q "%userprofile%\AppData\Local\GENESIS">>"c:\scripts\installlog.txt"
+del /q "%userprofile%\Start Menu\Programs\StartUp\GENESISLogonUSER.bat">>"c:\scripts\installlog.txt"
+del /q "%userprofile%\Start Menu\Programs\StartUp\SECURITY EXIT DOOR.lnk">>"c:\scripts\installlog.txt"
+del /q "%userprofile%\Desktop\GENESIS MENU.lnk">>"c:\scripts\installlog.txt"
+del /q "%userprofile%\Desktop\GENESIS TILL.lnk">>"c:\scripts\installlog.txt"
+del /q "%userprofile%\Desktop\GENESIS OFFLINE TILL.lnk">>"c:\scripts\installlog.txt"
+del /q "%userprofile%\Desktop\RunLogonUSER.bat">>"c:\scripts\installlog.txt"
+del /q "%userprofile%\Desktop\SECURITY EXIT DOOR.lnk">>"c:\scripts\installlog.txt"
+del /q "%userprofile%\Desktop\UPDATE-GENESIS.lnk">>"c:\scripts\installlog.txt"
+GOTO MENU
+=============================================================================================================
+:SRVBATFILES
+COLOR 07
+cls
+ECHO =========================================
+ECHO PLEASE PROVIDE SERVER DETAIL THATS NEEDED
+ECHO =========================================
+set /p COMPNAME=COMPANY NAME:
+cls
+COLOR 0A
+ECHO ----------------------------------------------
+ECHO     Is the following information correct?
+ECHO ----------------------------------------------
+ECHO COMPANY NAME: %COMPNAME%
+ECHO NETWORK DRIVE LETTER: %NETDRIVE%
+
+set INPUT=
+set /P INPUT=Type Y if correct and N to retry or C to cancel: %=%
+If %INPUT%== y goto yes1
+If %INPUT%== Y goto yes1
+if %INPUT%== C goto MENU
+if %INPUT%== c goto MENU
+If %INPUT%==%INPUT% goto SRVBATFILES
+
+:yes1
+COLOR 07
+cls
+@echo ***** CREATING LOGON SCRIPTS *****
+(
+	ECHO cls
+	ECHO @echo off 
+	ECHO @echo off 
+	ECHO md "%%userprofile%%\Documents\scripts" 
+	ECHO @echo ***** Making Folders ***** 
+	ECHO @echo ***** Making Folders ***** ^>"%%userprofile%%\Documents\scripts\logonlog.txt" 
+	ECHO md "C:\GENESIS" ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt" 
+	ECHO md "C:\GENESIS\SQL" ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt" 
+	ECHO md "C:\GENESIS\TEMP" ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt" 
+	ECHO :----------------------------------------------------------------------- 
+	ECHO :**** CHANGE THE SERVER DETAILS HERE ***** 
+	ECHO :======================================================================= 
+	ECHO set COMPNAME=%COMPNAME%
+	ECHO set SERVER IP=%SERVER IP%
+	ECHO set SERVER IP 2=
+	ECHO set SERVER IP 3=
+	ECHO set SERVER IP 4=
+	ECHO set SERVER IP 5=
+	ECHO set SERVER IP 6=
+	
+	ECHO set DRIVE1=%NETDRIVE%
+	ECHO set DRIVE2=
+	ECHO set DRIVE3=
+	ECHO set DRIVE4=
+	ECHO set DRIVE5=
+	ECHO set DRIVE6=
+	
+	ECHO set MAPDRIVE1=\\%%SERVER IP%%\%NETSHARE% /P:Yes
+	ECHO set MAPDRIVE2=\\%%SERVER IP 2%%\bsdcshares\Users /P:Yes
+	ECHO set MAPDRIVE3=\\%%SERVER IP 3%%\bsdcshares /P:Yes
+	ECHO set MAPDRIVE4=\\%%SERVER IP 4%%\DATA /P:Yes
+	ECHO set MAPDRIVE5=\\%%SERVER IP 5%%\WORKING /P:Yes
+	ECHO set MAPDRIVE6=\\%%SERVER IP 6%%\PUBLIC /P:Yes
+	ECHO ======================================================================
+	ECHO **** CHANGE THE EXE FILE NAME THAT MUST BE FIXED *****
+	ECHO =======================================================================
+	ECHO set fixexe=genTIL.
+	ECHO =======================================================================
+	
+	ECHO cls
+	ECHO @echo off ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO @echo ***** PLEASE WAIT RUNNING %%COMPNAME%% LOGON *****
+	ECHO @echo *****MAPING NETWORK DRIVES***** ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	
+	ECHO :-----------------------------------------------------------------------
+	ECHO :DRIVE1
+	ECHO COLOR 07
+	ECHO @echo =============MAPDRIVE1==============
+	ECHO :REMAP1
+	ECHO if exist %%DRIVE1%%:\GENESIS goto DONE
+	ECHO ping 127.0.0.1 -n 10 ^> nul
+	ECHO net use %%DRIVE1%%: /d /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO @echo MAPPING %%DRIVE1%% DRIVE ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO net use %%DRIVE1%%: %%MAPDRIVE1%% ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO if exist %%DRIVE1%%:\GENESIS goto DONE
+	ECHO COLOR 0C
+	ECHO @echo ***** FAILD TO MAP %%DRIVE1%% DRIVE *****
+	ECHO goto REMAP1
+	
+	ECHO :-----------------------------------------------------------------------
+	ECHO :DRIVE2
+	ECHO COLOR 07
+	ECHO @echo =============MAPDRIVE2==============
+	ECHO :REMAP2
+	ECHO if exist %%DRIVE2%%:\ goto DRIVE3
+	ECHO ping 127.0.0.1 -n 2 ^> nul
+	ECHO net use %%DRIVE2%%: /d /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO @echo MAPPING %%DRIVE2%% DRIVE ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO net use %%DRIVE2%%: %%MAPDRIVE2%% ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO if exist %%DRIVE2%%:\ goto DRIVE3
+	ECHO COLOR 0C
+	ECHO @echo ***** FAILD TO MAP %%DRIVE2%% DRIVE *****
+	ECHO goto REMAP2
+	
+	ECHO :-----------------------------------------------------------------------
+	ECHO :DRIVE3
+	ECHO COLOR 07
+	ECHO @echo =============MAPDRIVE3==============
+	ECHO :REMAP3
+	ECHO if exist %%DRIVE3%%:\ goto DRIVE4
+	ECHO ping 127.0.0.1 -n 2 ^> nul
+	ECHO net use %%DRIVE3%%: /d /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO @echo MAPPING %%DRIVE3%% DRIVE ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO net use %%DRIVE3%%: %%MAPDRIVE3%% ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO if exist %%DRIVE3%%:\ goto DRIVE4
+	ECHO COLOR 0C
+	ECHO @echo ***** FAILD TO MAP %%DRIVE3%% DRIVE *****
+	ECHO goto REMAP3
+	
+	ECHO :-----------------------------------------------------------------------
+	ECHO :DRIVE4
+	ECHO COLOR 07
+	ECHO @echo =============MAPDRIVE4==============
+	ECHO :REMAP4
+	ECHO if exist %%DRIVE4%%:\ goto DRIVE5
+	ECHO ping 127.0.0.1 -n 2 ^> nul
+	ECHO net use %%DRIVE4%%: /d /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO @echo MAPPING %%DRIVE4%% DRIVE ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO net use %%DRIVE4%%: %%MAPDRIVE4%% ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO if exist %%DRIVE4%%:\ goto DRIVE5
+	ECHO COLOR 0C
+	ECHO @echo ***** FAILD TO MAP %%DRIVE4%% DRIVE *****
+	ECHO goto REMAP4
+	
+	ECHO :-----------------------------------------------------------------------
+	ECHO :DRIVE5
+	ECHO COLOR 07
+	ECHO @echo =============MAPDRIVE5==============
+	ECHO :REMAP5
+	ECHO if exist %%DRIVE5%%:\ goto DRIVE6
+	ECHO ping 127.0.0.1 -n 2 ^> nul
+	ECHO net use %%DRIVE5%%: /d /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO @echo MAPPING %%DRIVE5%% DRIVE ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO net use %%DRIVE5%%: %%MAPDRIVE5%% ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO if exist %%DRIVE5%%:\ goto DRIVE6
+	ECHO COLOR 0C
+	ECHO @echo ***** FAILD TO MAP %%DRIVE5%% DRIVE *****
+	ECHO goto REMAP5
+	
+	ECHO :-----------------------------------------------------------------------
+	ECHO :DRIVE6
+	ECHO COLOR 07
+	ECHO @echo =============MAPDRIVE6==============
+	ECHO :REMAP6
+	ECHO if exist %%DRIVE6%%:\ goto DONE
+	ECHO ping 127.0.0.1 -n 2 ^> nul
+	ECHO net use %%DRIVE6%%: /d /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO @echo MAPPING %%DRIVE6%% DRIVE ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO net use %%DRIVE6%%: %%MAPDRIVE6%% ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO if exist %%DRIVE6%%:\ goto DONE
+	ECHO COLOR 0C
+	ECHO @echo ***** FAILD TO MAP %%DRIVE6%% DRIVE *****
+	ECHO goto REMAP6
+	ECHO :DONE
+	ECHO COLOR 07
+	ECHO :-----------------------------------------------------------------------
+	ECHO COLOR 0A
+	ECHO @ECHO ****** DRIVES MAPED *******
+	ECHO @ECHO ****** DRIVES MAPED ******* ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO ping 127.0.0.1 -n 2 ^> nul
+	ECHO COLOR 07
+	ECHO :-----------------------------------------------------------------------
+	ECHO @ECHO ***** UPDATEING LOCAL FILES *****
+	ECHO @ECHO ***** UPDATEING LOCAL FILES ***** ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO :-----------------------------------------------------------------------
+	ECHO @ECHO ******* FIX EXE'S *********
+	ECHO xcopy /h ""%%DRIVE1%%:\Genesis\%%FIXEXE%%" "C:\Genesis" /Y
+	ECHO :-----------------------------------------------------------------------
+	ECHO if exist "C:\GENESIS\GENSERVICES\genBRServer.exe" goto ff1
+	ECHO goto nf1
+	ECHO :ff1
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genBRServer.exe" "C:\Genesis\GENSERVICES" /D /y /I ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO :nf1
+	ECHO if exist "C:\GENESIS\GENSERVICES\genHQServer.exe" goto ff2
+	ECHO goto nf2
+	ECHO :ff2
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genHQServer.exe" "C:\Genesis\GENSERVICES" /D /y /I ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO :nf2
+	ECHO if exist "C:\GENESIS\GENSERVICES\genICStoreSvr.exe" goto ff3
+	ECHO goto nf3
+	ECHO :ff3
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genICStoreSvr.exe" "C:\Genesis\GENSERVICES" /D /y /I ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO :nf3
+	ECHO if exist "C:\GENESIS\GENSERVICES\genICHQSvr.exe" goto ff4
+	ECHO goto nf4
+	ECHO :ff4
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genICHQSvr.exe" "C:\Genesis\GENSERVICES" /D /y /I ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO :nf4
+	ECHO if exist "C:\GENESIS\GENSERVICES\genEOD.exe" goto ff5
+	ECHO goto nf5
+	ECHO :ff5
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genEOD.exe" "C:\Genesis\GENSERVICES" /D /y /I ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO :nf5
+	ECHO if exist "C:\GENESIS\GENSERVICES\genHQServer.exe" goto ff6
+	ECHO goto nf6
+	ECHO :ff6
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genHQServer.exe" "C:\Genesis\GENSERVICES" /D /y /I ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO :nf6
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\*.exe" "C:\Genesis" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\GENESIS INSTALL FILES\genSYNC.BAT" "C:\Genesis" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\GENESIS INSTALL FILES\RunLogon.bat" "%%allusersprofile%%\Desktop" /D /y /I ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\GENESIS INSTALL FILES\GenesisLogon.bat" "%%allusersprofile%%\Start Menu\Programs\StartUp" /D /y /i ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO copy "%%DRIVE1%%:\Genesis\GENESIS INSTALL FILES\GenesisLogon.bat" "%%allusersprofile%%\Start Menu\Programs\StartUp" /D /y /i ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\GENESIS INSTALL FILES\Synctime.bat" "c:\scripts" /D /y /I ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO if exist "C:\GENESIS\genMENU.exe" goto ff1
+	ECHO goto fnf1
+	ECHO :ff1
+	ECHO echo Set oWS = WScript.CreateObject^("WScript.Shell"^) ^> CreateShortcut.vbs
+	ECHO echo sLinkFile = "%%allusersprofile%%\Desktop\GENESIS MENU.lnk" ^>^> CreateShortcut.vbs
+	ECHO echo Set oLink = oWS.CreateShortcut^(sLinkFile^) ^>^> CreateShortcut.vbs
+	ECHO echo oLink.TargetPath = "C:\GENESIS\genMENU.exe" ^>^> CreateShortcut.vbs
+	ECHO echo olink.workingdirectory = "C:\GENESIS" ^>^> CreateShortcut.vbs
+	ECHO echo olink.IconLocation ="C:\GENESIS\genMENU.exe" ^>^> CreateShortcut.vbs
+	ECHO echo oLink.Save ^>^> CreateShortcut.vbs
+	ECHO cscript CreateShortcut.vbs
+	ECHO del CreateShortcut.vbs
+	ECHO :fnf1
+	ECHO if exist "C:\GENESIS\genTIL.exe" goto ff2
+	ECHO goto fnf2
+	ECHO :ff2
+	ECHO echo Set oWS = WScript.CreateObject^("WScript.Shell"^) ^> CreateShortcut.vbs
+	ECHO echo sLinkFile = "%%allusersprofile%%\Desktop\GENESIS TILL.lnk" ^>^> CreateShortcut.vbs
+	ECHO echo Set oLink = oWS.CreateShortcut^(sLinkFile^) ^>^> CreateShortcut.vbs
+	ECHO echo oLink.TargetPath = "C:\GENESIS\genTIL.exe" ^>^> CreateShortcut.vbs
+	ECHO echo olink.workingdirectory = "C:\GENESIS" ^>^> CreateShortcut.vbs
+	ECHO echo olink.IconLocation ="C:\GENESIS\genTIL.exe" ^>^> CreateShortcut.vbs
+	ECHO echo oLink.Save ^>^> CreateShortcut.vbs
+	ECHO cscript CreateShortcut.vbs
+	ECHO del CreateShortcut.vbs
+	ECHO :fnf2
+	ECHO if exist "C:\GENESIS\GenOTL.exe" goto ff3
+	ECHO goto fnf3
+	ECHO :ff3
+	ECHO echo Set oWS = WScript.CreateObject^("WScript.Shell"^) ^> CreateShortcut.vbs
+	ECHO echo sLinkFile = "%%allusersprofile%%\Desktop\GENESIS OFFLINE TILL.lnk" ^>^> CreateShortcut.vbs
+	ECHO echo Set oLink = oWS.CreateShortcut^(sLinkFile^) ^>^> CreateShortcut.vbs
+	ECHO echo oLink.TargetPath = "C:\GENESIS\GenOTL.exe" ^>^> CreateShortcut.vbs
+	ECHO echo olink.workingdirectory = "C:\GENESIS" ^>^> CreateShortcut.vbs
+	ECHO echo olink.IconLocation ="C:\GENESIS\GenOTL.exe" ^>^> CreateShortcut.vbs
+	ECHO echo oLink.Save ^>^> CreateShortcut.vbs
+	ECHO cscript CreateShortcut.vbs
+	ECHO del CreateShortcut.vbs
+	ECHO :fnf3
+		
+	ECHO :-----------------------------------------------------------------------
+	ECHO @echo ***** SETTING THE TIME *****
+	ECHO @echo ***** SETTING THE TIME ***** ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO net time \\%%SERVER IP%% /set /yes ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO @echo ***** IMPORT TIME SETTINGS*****
+	ECHO @echo ***** IMPORT TIME SETTINGS***** ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO Reg import "C:\GENESIS\INSTALL\REGION.REG" ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	
+	ECHO :-----------------------------------------------------------------------
+	ECHO @echo ***** CHECKING SQL SERVICE *****
+	ECHO @echo ***** CHECKING SQL SERVICE ***** %%date%% %%time%% ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO ping 127.0.0.1 -n 2 ^> nul
+	ECHO for /F "tokens=3 delims=: " %%^%%H in ^('sc query "MSSQLSERVER" ^^^| findstr "STATE"'^) do (if /I "%%%%H" NEQ "RUNNING" (net start "MSSQLSERVER"^)^)^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO sc query "MSSQLSERVER"^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO sc query "MSSQLSERVER" ^| findstr RUNNING
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+) >"%NETDRIVE%:\GENESIS\GENESIS INSTALL FILES\GenesisLogon.bat"
+
+(
+	ECHO cls
+	ECHO @echo off 
+	ECHO md "%%userprofile%%\Documents\scripts" 
+	ECHO @echo ***** Making Folders ***** 
+	ECHO @echo ***** Making Folders ***** ^>"%%userprofile%%\Documents\scripts\logonlog.txt" 
+	ECHO md "%%userprofile%%\AppData\Local\GENESIS" ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt" 
+	ECHO md "%%userprofile%%\AppData\Local\GENESIS\SQL" ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt" 
+	ECHO md "%%userprofile%%\AppData\Local\GENESIS\TEMP" ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt" 
+	ECHO :----------------------------------------------------------------------- 
+	ECHO :**** CHANGE THE SERVER DETAILS HERE ***** 
+	ECHO :======================================================================= 
+	ECHO set COMPNAME=%COMPNAME%
+	ECHO set SERVER IP=%SERVER IP%
+	ECHO set SERVER IP 2=
+	ECHO set SERVER IP 3=
+	ECHO set SERVER IP 4=
+	ECHO set SERVER IP 5=
+	ECHO set SERVER IP 6=
+	
+	ECHO set DRIVE1=%NETDRIVE%
+	ECHO set DRIVE2=
+	ECHO set DRIVE3=
+	ECHO set DRIVE4=
+	ECHO set DRIVE5=
+	ECHO set DRIVE6=
+	
+	ECHO set MAPDRIVE1=\\%%SERVER IP%%\%NETSHARE% /P:Yes
+	ECHO set MAPDRIVE2=\\%%SERVER IP 2%%\bsdcshares\Users /P:Yes
+	ECHO set MAPDRIVE3=\\%%SERVER IP 3%%\bsdcshares /P:Yes
+	ECHO set MAPDRIVE4=\\%%SERVER IP 4%%\DATA /P:Yes
+	ECHO set MAPDRIVE5=\\%%SERVER IP 5%%\WORKING /P:Yes
+	ECHO set MAPDRIVE6=\\%%SERVER IP 6%%\PUBLIC /P:Yes
+	ECHO ======================================================================
+	ECHO **** CHANGE THE EXE FILE NAME THAT MUST BE FIXED *****
+	ECHO =======================================================================
+	ECHO set fixexe=genTIL
+	ECHO =======================================================================
+	
+	ECHO cls
+	ECHO @echo off ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO @echo ***** PLEASE WAIT RUNNING %%COMPNAME%% LOGON *****
+	ECHO @echo *****MAPING NETWORK DRIVES***** ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	
+	ECHO :-----------------------------------------------------------------------
+	ECHO :DRIVE1
+	ECHO COLOR 07
+	ECHO @echo =============MAPDRIVE1==============
+	ECHO :REMAP1
+	ECHO if exist %%DRIVE1%%:\GENESIS goto DONE
+	ECHO ping 127.0.0.1 -n 10 ^> nul
+	ECHO net use %%DRIVE1%%: /d /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO @echo MAPPING %%DRIVE1%% DRIVE ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO net use %%DRIVE1%%: %%MAPDRIVE1%% ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO if exist %%DRIVE1%%:\GENESIS goto DONE
+	ECHO COLOR 0C
+	ECHO @echo ***** FAILD TO MAP %%DRIVE1%% DRIVE *****
+	ECHO goto REMAP1
+	
+	ECHO :-----------------------------------------------------------------------
+	ECHO :DRIVE2
+	ECHO COLOR 07
+	ECHO @echo =============MAPDRIVE2==============
+	ECHO :REMAP2
+	ECHO if exist %%DRIVE2%%:\ goto DRIVE3
+	ECHO ping 127.0.0.1 -n 2 ^> nul
+	ECHO net use %%DRIVE2%%: /d /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO @echo MAPPING %%DRIVE2%% DRIVE ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO net use %%DRIVE2%%: %%MAPDRIVE2%% ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO if exist %%DRIVE2%%:\ goto DRIVE3
+	ECHO COLOR 0C
+	ECHO @echo ***** FAILD TO MAP %%DRIVE2%% DRIVE *****
+	ECHO goto REMAP2
+	
+	ECHO :-----------------------------------------------------------------------
+	ECHO :DRIVE3
+	ECHO COLOR 07
+	ECHO @echo =============MAPDRIVE3==============
+	ECHO :REMAP3
+	ECHO if exist %%DRIVE3%%:\ goto DRIVE4
+	ECHO ping 127.0.0.1 -n 2 ^> nul
+	ECHO net use %%DRIVE3%%: /d /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO @echo MAPPING %%DRIVE3%% DRIVE ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO net use %%DRIVE3%%: %%MAPDRIVE3%% ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO if exist %%DRIVE3%%:\ goto DRIVE4
+	ECHO COLOR 0C
+	ECHO @echo ***** FAILD TO MAP %%DRIVE3%% DRIVE *****
+	ECHO goto REMAP3
+	
+	ECHO :-----------------------------------------------------------------------
+	ECHO :DRIVE4
+	ECHO COLOR 07
+	ECHO @echo =============MAPDRIVE4==============
+	ECHO :REMAP4
+	ECHO if exist %%DRIVE4%%:\ goto DRIVE5
+	ECHO ping 127.0.0.1 -n 2 ^> nul
+	ECHO net use %%DRIVE4%%: /d /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO @echo MAPPING %%DRIVE4%% DRIVE ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO net use %%DRIVE4%%: %%MAPDRIVE4%% ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO if exist %%DRIVE4%%:\ goto DRIVE5
+	ECHO COLOR 0C
+	ECHO @echo ***** FAILD TO MAP %%DRIVE4%% DRIVE *****
+	ECHO goto REMAP4
+	
+	ECHO :-----------------------------------------------------------------------
+	ECHO :DRIVE5
+	ECHO COLOR 07
+	ECHO @echo =============MAPDRIVE5==============
+	ECHO :REMAP5
+	ECHO if exist %%DRIVE5%%:\ goto DRIVE6
+	ECHO ping 127.0.0.1 -n 2 ^> nul
+	ECHO net use %%DRIVE5%%: /d /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO @echo MAPPING %%DRIVE5%% DRIVE ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO net use %%DRIVE5%%: %%MAPDRIVE5%% ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO if exist %%DRIVE5%%:\ goto DRIVE6
+	ECHO COLOR 0C
+	ECHO @echo ***** FAILD TO MAP %%DRIVE5%% DRIVE *****
+	ECHO goto REMAP5
+	
+	ECHO :-----------------------------------------------------------------------
+	ECHO :DRIVE6
+	ECHO COLOR 07
+	ECHO @echo =============MAPDRIVE6==============
+	ECHO :REMAP6
+	ECHO if exist %%DRIVE6%%:\ goto DONE
+	ECHO ping 127.0.0.1 -n 2 ^> nul
+	ECHO net use %%DRIVE6%%: /d /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO @echo MAPPING %%DRIVE6%% DRIVE ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO net use %%DRIVE6%%: %%MAPDRIVE6%% ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO if exist %%DRIVE6%%:\ goto DONE
+	ECHO COLOR 0C
+	ECHO @echo ***** FAILD TO MAP %%DRIVE6%% DRIVE *****
+	ECHO goto REMAP6
+	ECHO :DONE
+	ECHO COLOR 07
+	ECHO :-----------------------------------------------------------------------
+	ECHO COLOR 0A
+	ECHO @ECHO ****** DRIVES MAPED *******
+	ECHO @ECHO ****** DRIVES MAPED ******* ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO ping 127.0.0.1 -n 2 ^> nul
+	ECHO COLOR 07
+	
+	ECHO :-----------------------------------------------------------------------
+	ECHO @ECHO ***** UPDATEING LOCAL FILES *****
+	ECHO @ECHO ***** UPDATEING LOCAL FILES ***** ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO :-----------------------------------------------------------------------
+	ECHO @ECHO ******* FIX EXE'S *********
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\%%FIXEXE%%" "%%userprofile%%\AppData\Local\GENESIS" /Y
+	ECHO :-----------------------------------------------------------------------
+	ECHO if exist "C:\GENESIS\GENSERVICES\genBRServer.exe" goto ff1
+	ECHO goto nf1
+	ECHO :ff1
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genBRServer.exe" "C:\Genesis\GENSERVICES" /D /y /I ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO :nf1
+	ECHO if exist "C:\GENESIS\GENSERVICES\genHQServer.exe" goto ff2
+	ECHO goto nf2
+	ECHO :ff2
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genHQServer.exe" "C:\Genesis\GENSERVICES" /D /y /I ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO :nf2
+	ECHO if exist "C:\GENESIS\GENSERVICES\genICStoreSvr.exe" goto ff3
+	ECHO goto nf3
+	ECHO :ff3
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genICStoreSvr.exe" "C:\Genesis\GENSERVICES" /D /y /I ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO :nf3
+	ECHO if exist "C:\GENESIS\GENSERVICES\genICHQSvr.exe" goto ff4
+	ECHO goto nf4
+	ECHO :ff4
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genICHQSvr.exe" "C:\Genesis\GENSERVICES" /D /y /I ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO :nf4
+	ECHO if exist "C:\GENESIS\GENSERVICES\genEOD.exe" goto ff5
+	ECHO goto nf5
+	ECHO :ff5
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genEOD.exe" "C:\Genesis\GENSERVICES" /D /y /I ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO :nf5
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genmenu.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genpur.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genbud.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genrtb.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genrtn.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genutl.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genvpn.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genset.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\gengsm.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genglg.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\gendeb.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genfix.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\gensec.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genstk.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\gencrd.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\gencof.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genpos.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\gentil.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genrep.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\geneod.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genlsm.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genSNL.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genSNF.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genTLQ.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genSVM.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genTSH.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genSER.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genpcn.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genQUE.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genSYNC.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genHELP.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\genMacReg.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\GENESIS\genOTL.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\GENESIS\genOTS.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\GENESIS\genOTR.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\GENESIS\genOCO.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\GENESIS\genVWS.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\GENESIS INSTALL FILES\genSYNC.BAT" "%%userprofile%%\AppData\Local\GENESIS" /D /y ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\GENESIS INSTALL FILES\RunLogonUSER.bat" "%%userprofile%%\Desktop" /D /y /i ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\GENESIS INSTALL FILES\GenesisLogonUser.bat" "%%userprofile%%\Start Menu\Programs\StartUp" /D /y /i ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO copy "%%DRIVE1%%:\Genesis\GENESIS INSTALL FILES\GenesisLogonUser.bat" "%%userprofile%%\Start Menu\Programs\StartUp" /D /y /i ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO xcopy /h "%%DRIVE1%%:\Genesis\GENESIS INSTALL FILES\Synctime.bat" "c:\scripts" /D /y /i ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO if exist "%%userprofile%%\AppData\Local\GENESIS\genMENU.exe" goto ff1
+	ECHO goto fnf1
+	ECHO :ff1
+	ECHO echo Set oWS = WScript.CreateObject^("WScript.Shell"^) ^> CreateShortcut.vbs
+	ECHO echo sLinkFile = "%%userprofile%%\Desktop\GENESIS MENU.lnk" ^>^> CreateShortcut.vbs
+	ECHO echo Set oLink = oWS.CreateShortcut^(sLinkFile^) ^>^> CreateShortcut.vbs
+	ECHO echo oLink.TargetPath = "%%userprofile%%\AppData\Local\GENESIS\genMENU.exe" ^>^> CreateShortcut.vbs
+	ECHO echo olink.workingdirectory = "%%userprofile%%\AppData\Local\GENESIS" ^>^> CreateShortcut.vbs
+	ECHO echo olink.IconLocation ="%%userprofile%%\AppData\Local\GENESIS\genMENU.exe" ^>^> CreateShortcut.vbs
+	ECHO echo oLink.Save ^>^> CreateShortcut.vbs
+	ECHO cscript CreateShortcut.vbs
+	ECHO del CreateShortcut.vbs
+	ECHO :fnf1
+	ECHO if exist "%%userprofile%%\AppData\Local\GENESIS\genTIL.exe" goto ff2
+	ECHO goto fnf2
+	ECHO :ff2
+	ECHO echo Set oWS = WScript.CreateObject^("WScript.Shell"^) ^> CreateShortcut.vbs
+	ECHO echo sLinkFile = "%%userprofile%%\Desktop\GENESIS TILL.lnk" ^>^> CreateShortcut.vbs
+	ECHO echo Set oLink = oWS.CreateShortcut^(sLinkFile^) ^>^> CreateShortcut.vbs
+	ECHO echo oLink.TargetPath = "%%userprofile%%\AppData\Local\GENESIS\genTIL.exe" ^>^> CreateShortcut.vbs
+	ECHO echo olink.workingdirectory = "%%userprofile%%\AppData\Local\GENESIS" ^>^> CreateShortcut.vbs
+	ECHO echo olink.IconLocation ="%%userprofile%%\AppData\Local\GENESIS\genTIL.exe" ^>^> CreateShortcut.vbs
+	ECHO echo oLink.Save ^>^> CreateShortcut.vbs
+	ECHO cscript CreateShortcut.vbs
+	ECHO del CreateShortcut.vbs
+	ECHO :fnf2
+	ECHO if exist "%%userprofile%%\AppData\Local\GENESIS\GenOTL.exe" goto ff3
+	ECHO goto fnf3
+	ECHO :ff3
+	ECHO echo Set oWS = WScript.CreateObject^("WScript.Shell"^) ^> CreateShortcut.vbs
+	ECHO echo sLinkFile = "%%allusersprofile%%\Desktop\GENESIS OFFLINE TILL.lnk" ^>^> CreateShortcut.vbs
+	ECHO echo Set oLink = oWS.CreateShortcut^(sLinkFile^) ^>^> CreateShortcut.vbs
+	ECHO echo oLink.TargetPath = "%%userprofile%%\AppData\Local\GENESIS\GenOTL.exe" ^>^> CreateShortcut.vbs
+	ECHO echo olink.workingdirectory = "%%userprofile%%\AppData\Local\GENESIS" ^>^> CreateShortcut.vbs
+	ECHO echo olink.IconLocation ="%%userprofile%%\AppData\Local\GENESIS\GenOTL.exe" ^>^> CreateShortcut.vbs
+	ECHO echo oLink.Save ^>^> CreateShortcut.vbs
+	ECHO cscript CreateShortcut.vbs
+	ECHO del CreateShortcut.vbs
+	ECHO :fnf3
+	ECHO @echo ***** SETTING THE TIME *****
+	ECHO @echo ***** SETTING THE TIME ***** ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO net time \\%%SERVER IP%% /set /yes ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO @echo ***** IMPORT TIME SETTINGS*****
+	ECHO @echo ***** IMPORT TIME SETTINGS***** ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO Reg import "C:\GENESIS\INSTALL\REGION.REG" ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	
+	ECHO :-----------------------------------------------------------------------
+	ECHO @echo ***** CHECKING SQL SERVICE *****
+	ECHO @echo ***** CHECKING SQL SERVICE ***** %%date%% %%time%% ^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO ping 127.0.0.1 -n 2 ^> nul
+	ECHO for /F "tokens=3 delims=: " %%^%%H in ^('sc query "MSSQLSERVER" ^^^| findstr "STATE"'^) do (if /I "%%%%H" NEQ "RUNNING" (net start "MSSQLSERVER"^)^)^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO sc query "MSSQLSERVER"^>^>"%%userprofile%%\Documents\scripts\logonlog.txt"
+	ECHO sc query "MSSQLSERVER" ^| findstr RUNNING
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+) >"%NETDRIVE%:\GENESIS\GENESIS INSTALL FILES\GenesisLogonUser.bat"
+ping 127.0.0.1 -n 3 > nul
+
+@echo ***** EXE VERSION SYNC BAT *****
+(
+	ECHO echo off
+	ECHO cls
+	ECHO if exist "C:\GENESIS\genmenu.exe" goto FOUND1
+	ECHO goto no
+	ECHO :FOUND1
+	ECHO if exist "%%userprofile%%\AppData\Local\GENESIS\genmenu.exe" goto FOUND2
+	ECHO goto no
+	ECHO :FOUND2
+	ECHO color 0C
+	ECHO @echo ==========================================================
+	ECHO @echo                 ERROR updateing GENESIS.
+	ECHO @echo           More then one GENESIS FOLDER FOUND.
+	ECHO @echo ==========================================================
+	ECHO pause
+	ECHO exit
+	ECHO :no
+	ECHO if exist "%%userprofile%%\AppData\Local\GENESIS\genmenu.exe" goto yes2
+	ECHO if exist "C:\GENESIS\genmenu.exe" goto yes1
+	ECHO goto no1
+	ECHO :yes1
+	ECHO @echo ***** UPDATEING GENESIS *****
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO echo Updating GENESIS Programs to this Machine
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genmenu.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genpur.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genbud.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genrtb.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genrtn.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genutl.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genvpn.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genset.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\gengsm.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genglg.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\gendeb.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genfix.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\gensec.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genstk.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\gencrd.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\gencof.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genpos.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\gentil.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genrep.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\geneod.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genlsm.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genpcn.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genSNL.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genSNF.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genTLQ.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genSVM.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\Genesis\genTSH.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genSER.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genQUE.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genOTL.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genOTS.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\Genesis\genOTR.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genOCO.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genVWS.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genSYNC.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genHELP.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genMacReg.exe" "C:\GENESIS" /D /Y /C /R
+	ECHO COLOR 0A
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+	
+	ECHO :no1
+	ECHO echo off
+	ECHO if exist "%%userprofile%%\AppData\Local\GENESIS\genmenu.exe" goto yes2
+	ECHO goto no2
+	ECHO :yes2
+	ECHO @echo ***** UPDATEING GENESIS USER *****
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO echo Updating GENESIS Programs to this Machine
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genmenu.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genpur.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genbud.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genrtb.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genrtn.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genutl.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genvpn.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genset.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\gengsm.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genglg.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\gendeb.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genfix.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\gensec.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genstk.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\gencrd.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\gencof.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genpos.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\gentil.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genrep.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\geneod.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genlsm.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genpcn.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genSNL.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genSNF.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genTLQ.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genSVM.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\Genesis\genTSH.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genSER.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genQUE.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genOTL.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genOTS.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\Genesis\genOTR.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genOCO.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genVWS.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genSYNC.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genHELP.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\genMacReg.exe" "%%userprofile%%\AppData\Local\GENESIS" /D /Y /C /R
+	ECHO COLOR 0A
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+	ECHO :no2
+	ECHO CLS
+	ECHO color 0C
+	ECHO @echo ========================
+	ECHO @echo FAILED TO UPDATE GENESIS 
+	ECHO @echo GENESIS FILES NOT FOUND
+	ECHO @echo ========================
+	ECHO pause
+)>"%NETDRIVE%:\GENESIS\GENESIS INSTALL FILES\genSYNC.BAT"
+ping 127.0.0.1 -n 3 > nul
+
+@echo ***** CREATING TIME SYNC FILE *****
+(
+	ECHO CLS
+	ECHO set SERVER IP=%SERVER IP%
+	ECHO Net time \\%%SERVER IP%% /SET /Y
+)>"%NETDRIVE%:\GENESIS\GENESIS INSTALL FILES\Synctime.bat"
+ping 127.0.0.1 -n 3 > nul
+
+@echo ***** CREATING DESKTOP RUNLOGON FILES *****
+(
+	ECHO cls
+	ECHO set NETDRIVE=%NETDRIVE%
+	ECHO xcopy /h "%%NETDRIVE%%:\Genesis\GENESIS INSTALL FILES\GENESISLogon.bat" "%%allusersprofile%%\Start Menu\Programs\StartUp" /D /Y /I
+	ECHO "%%allusersprofile%%\Start Menu\Programs\StartUp\GENESISLogon.bat"
+)>"%NETDRIVE%:\GENESIS\GENESIS INSTALL FILES\RunLogon.bat"
+ping 127.0.0.1 -n 3 > nul
+(
+	ECHO cls
+	ECHO set NETDRIVE=%NETDRIVE%
+	ECHO xcopy /h "%%NETDRIVE%%:\Genesis\GENESIS INSTALL FILES\GENESISLogonUSER.bat" "%%userprofile%%\Start Menu\Programs\StartUp" /D /Y /I
+	ECHO "%%userprofile%%\Start Menu\Programs\StartUp\GENESISLogonUSER.bat"
+)>"%NETDRIVE%:\GENESIS\GENESIS INSTALL FILES\RunLogonUSER.bat"
+ping 127.0.0.1 -n 3 > nul
+goto menu
+
+:GENSERVICES
+md c:\GENESIS\GENSERVICES
+md c:\GENESIS\INSTALL
+md %NETDRIVE%:\GENESIS\GENSERVICES
+COLOR 07
+cls
+
+:UPDSERVICE
+ECHO ........................................................................
+ECHO SELECT YOUR OPTION BY TYPING THE CORESPONDING NUMBER AND THEN ENTER KEY.
+ECHO ........................................................................
+ECHO.
+ECHO  1 - CREATE SERVICE SINGLE 
+ECHO  2 - CREATE SERVICE GROUP
+ECHO 10 - UPDATE DETAILS
+ECHO 99 - MAIN MENU
+
+ECHO.
+SET /P option=Select a task then press ENTER:
+IF %option%==1 GOTO ONESERVICE
+IF %option%==2 GOTO GRPSERVICE
+IF %option%==10 GOTO UPDSERVICE
+IF %option%==99 GOTO MENU
+IF %option%=="%option%" GOTO UPDSERVICE
+goto UPDSERVICE
+
+
+:ONESERVICE
+cls
+ECHO =========================================
+ECHO PLEASE PROVIDE SERVER DETAIL THATS NEEDED
+ECHO =========================================
+set /p SVRNAME=SERVER USERNAME:
+set /p SVRPASS=SERVER PASSWORD:
+set /p GENCOMP=GENESIS COMPANY CODE:
+set /p GENBR=GENESIS BRANCH CODE:
+::set /p GENGRP=Store GROUP CODE:
+(
+	ECHO @echo off
+	ECHO SETLOCAL EnableExtensions
+	ECHO cls
+	ECHO echo ***** CLOSING ALL OPEN SERVICES *****
+	ECHO set EXEEOD1=genEOD%GENBR%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXEEOD1%%"'^) DO IF %%%%x == %%EXEEOD1%% goto EODop1
+	ECHO echo %%EXEEOD1%% SERVICE IS NOT RUNNING
+	ECHO goto EXEBRS1
+	ECHO :EODop1
+	ECHO taskkill /IM %%EXEEOD1%%
+	
+	ECHO :EXEBRS1
+	ECHO set EXEBRS1=genBRServer%GENBR%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXEBRS1%%"'^) DO IF %%%%x == %%EXEBRS1%% goto BRSop1
+	ECHO echo %%EXEBRS1%% SERVICE IS NOT RUNNING
+	ECHO goto EXEHQS1
+	ECHO :BRSop1
+	ECHO taskkill /IM %%EXEBRS1%% /F
+	
+	ECHO :EXEHQS1
+	ECHO set EXEHQS1=genHQServer%GENBR%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXEHQS1%%"'^) DO IF %%%%x == %%EXEHQS1%% goto HQSop1
+	ECHO echo %%EXEHQS1%% SERVICE IS NOT RUNNING
+	ECHO goto EXEBRA1
+	ECHO :HQSop1
+	ECHO taskkill /IM %%EXEHQS1%% /F
+	
+	ECHO :EXEBRA1
+	ECHO set EXEBRA1=genBranchSvr%GENBR%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXEBRA1%%"'^) DO IF %%%%x == %%EXEBRA1%% goto BRAop1
+	ECHO echo %%EXEBRA1%% SERVICE IS NOT RUNNING
+	ECHO goto EXEHOS1
+	ECHO :BRAop1
+	ECHO taskkill /IM %%EXEBRA1%% /F
+	
+	ECHO :EXEHOS1
+	ECHO set EXEHOS1=genHOSvr%GENBR%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXEHOS1%%"'^) DO IF %%%%x == %%EXEHOS1%% goto HOSop1
+	ECHO echo %%EXEHOS1%% SERVICE IS NOT RUNNING
+	ECHO goto EXEWDS1
+	ECHO :HOSop1
+	ECHO taskkill /IM %%EXEHOS1%% /F
+	
+	ECHO :EXEWDS1
+	ECHO set EXEWDS1=genDownloadSvr%GENBR%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXEWDS1%%"'^) DO IF %%%%x == %%EXEWDS1%% goto WDSop1
+	ECHO echo %%EXEWDS1%% SERVICE IS NOT RUNNING
+	ECHO goto EXEWUS1
+	ECHO :WDSop1
+	ECHO taskkill /IM %%EXEWDS1%% /F
+	
+	ECHO :EXEWUS1
+	ECHO set EXEWUS1=genUploadSvr%GENBR%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXEWUS1%%"'^) DO IF %%%%x == %%EXEWUS1%% goto WUSop1
+	ECHO echo %%EXEWUS1%% SERVICE IS NOT RUNNING
+	ECHO goto EXEHQSV1
+	ECHO :WUSop1
+	ECHO taskkill /IM %%EXEWUS1%% /F
+
+	ECHO :EXEHQSV1
+	ECHO set EXEHQSV1=genHQServer%GENBR%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXEHQSV1%%"'^) DO IF %%%%x == %%EXEHQSV1%% goto ICSSop1
+	ECHO echo %%EXEHQSV1%% SERVICE IS NOT RUNNING
+	ECHO goto EXEICSS1
+	ECHO :ICSSop1
+	ECHO taskkill /IM %%EXEHQSV1%% /F
+	
+	ECHO :EXEICSS1
+	ECHO set EXEICSS1=genICStoreSvr%GENBR%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXEICSS1%%"'^) DO IF %%%%x == %%EXEICSS1%% goto ICSSop1
+	ECHO echo %%EXEICSS1%% SERVICE IS NOT RUNNING
+	ECHO goto EXEWCS1
+	ECHO :ICSSop1
+	ECHO taskkill /IM %%EXEICSS1%% /F
+	
+	ECHO :EXEWCS1
+	ECHO set EXEWCS1=genWCS%GENBR%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXEWCS1%%"'^) DO IF %%%%x == %%EXEWCS1%% goto ICSSop1
+	ECHO echo %%EXEWCS1%% SERVICE IS NOT RUNNING
+	ECHO goto EXEICHS1
+	ECHO :ICSSop1
+	ECHO taskkill /IM %%EXEWCS1%% /F
+	
+	ECHO :EXEICHS1
+	ECHO set EXEICHS1=genICHQSvr%GENBR%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXEICHS1%%"'^) DO IF %%%%x == %%EXEICHS1%% goto ICHSop1
+	ECHO echo %%EXEICHS1%% SERVICE IS NOT RUNNING
+	ECHO goto ICHsnf1
+	ECHO :ICHSop1
+	ECHO taskkill /IM %%EXEICHS1%% /F
+	ECHO :ICHsnf1
+	ECHO timeout 60
+	ECHO EXIT
+)>"C:\GENESIS\GENSERVICES\STOP-ALL-SERVICES-%GENBR%.bat"
+schtasks /create /sc DAILY /st 06:00:00 /RI 240 /DU 24:00 /tn "GENESIS STOP ALL SERVICES %GENBR%" /RU "%SVRNAME%" /RP "%SVRPASS%" /tr "C:\GENESIS\GENSERVICES\STOP-ALL-SERVICES-%GENBR%.bat"
+sqlcmd -U sa -P Pa$$w0rD -S (local) -Q "CREATE DATABASE [GENESIS-%GENBR%-VPN]"
+
+:TOPGENSVR
+cls
+ECHO USERNAME:%SVRNAME% USERPASSWORD:%SVRPASS%
+:UPDCOBRDET
+ECHO GENESIS COMPANY CODE:%GENCOMP%
+ECHO GENESIS BRANCH CODE:%GENBR%
+ECHO.
+ECHO ........................................................................
+ECHO SELECT YOUR OPTION BY TYPING THE CORESPONDING NUMBER AND THEN ENTER KEY.
+ECHO ........................................................................
+ECHO.
+ECHO  1 - CREATE IC STORE SERVICE
+ECHO  2 - CREATE IC HEAD OFFICE SERVICE
+ECHO  3 - CREATE HEAD OFFICE SERVICE
+ECHO  4 - CREATE BRANCH SERVICES
+ECHO  5 - CREATE WEB SERVICE
+ECHO  6 - CREATE HO SERVICE (KITKAT)
+ECHO  7 - CREATE BRANCH SERVICE (KITKAT)
+ECHO  8 - CREATE HEAD OFFICE SERVER SERVICE (OFFLINE TIIL)
+ECHO  9 - CREATE END OF DAY SERVICE
+ECHO 10 - UPDATE DATAILS
+ECHO 99 - MAIN MENU
+
+ECHO.
+SET /P option=Select a task then press ENTER:
+IF %option%==1 GOTO ICSTSERVICE
+IF %option%==2 GOTO ICHQSERVICE
+IF %option%==3 GOTO HQSERVICE
+IF %option%==4 GOTO BRSERVICE
+IF %option%==5 GOTO WEBSERVICE
+IF %option%==6 GOTO HOSERVICE
+IF %option%==7 GOTO BRASERVICE
+IF %option%==8 GOTO HOSERVER
+IF %option%==9 GOTO EODSERVICE
+IF %option%==10 GOTO UPDCOBRDET
+IF %option%==99 GOTO MENU
+IF %option%=="%option%" GOTO TOPGENSVR
+goto TOPGENSVR
+
+:ICSTSERVICE
+@echo ***** CREATING IC STORE SYNC SERVICE*****
+copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genICStoreSvr.exe" "C:\GENESIS\GENSERVICES\genICStoreSvr%GENBR%.exe" /y
+(
+	ECHO echo off
+	ECHO cls
+	ECHO ======================
+	ECHO set GENCOMP=%GENCOMP%
+	ECHO set GENBR=%GENBR%
+	ECHO ======================
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE=genICStoreSvr%%GENBR%%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXE%%"'^) DO IF %%%%x == %%EXE%% goto FOUND
+	ECHO echo SERVICE IS NOT RUNNING
+	ECHO echo ***** STARTING BRANCH SYNC SERVICE *****
+	ECHO echo %%GENBR%%
+	ECHO copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genICStoreSvr.exe" "C:\GENESIS\GENSERVICES\genICStoreSvr%%GENBR%%.exe" /y
+	ECHO start "" "C:\GENESIS\GENSERVICES\%%EXE%%" %%GENCOMP%% %%GENBR%% AUTO
+	ECHO goto EXIT
+	ECHO :FOUND
+	ECHO echo SERVICE IS RUNNING
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+)>"C:\GENESIS\GENSERVICES\START-IC-STORE-SERVICE-%GENBR%.bat"
+schtasks /create /sc DAILY /st 06:00:00 /RI 1 /DU 24:00 /tn "genesisICstoreSVR-%GENBR%" /RU "%SVRNAME%" /RP "%SVRPASS%" /tr "C:\GENESIS\GENSERVICES\START-IC-STORE-SERVICE-%GENBR%.bat"
+cls
+@echo ***** DONE *****
+@echo ***** CREATING CHECK SERVICES STATUS *****
+(
+	ECHO @echo off
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE1=gen*
+	ECHO :top
+	ECHO cls
+	ECHO TASKLIST /FI "IMAGENAME eq %%exe1%%"
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO timeout 60
+	ECHO goto top
+)>"C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat"
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%HOMEDRIVE%%HOMEPATH%\Desktop\CHECK SERVICES STATUS.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat" >> CreateShortcut.vbs
+echo olink.workingdirectory = "C:\GENESIS\GENSERVICES\" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\INSTALL\LOGO.ico" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+ping 127.0.0.1 -n 3 > nul
+goto TOPGENSVR
+
+:ICHQSERVICE
+@echo ***** CREATING IC HEAD OFFICE SERVICE *****
+copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genICHQSvr.exe" "C:\GENESIS\GENSERVICES\genICHQSvr%GENBR%.exe" /y
+(
+	ECHO echo off
+	ECHO cls
+	ECHO ======================
+	ECHO set GENCOMP=%GENCOMP%
+	ECHO set GENBR=%GENBR%
+	ECHO ======================
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE=genICHQSvr%%GENBR%%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXE%%"'^) DO IF %%%%x == %%EXE%% goto FOUND
+	ECHO echo SERVICE IS NOT RUNNING
+	ECHO echo ***** STARTING HEAD OFFICE SYNC SERVICE *****
+	ECHO echo %%GENBR%%
+	ECHO copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genICHQSvr.exe" "C:\GENESIS\GENSERVICES\genICHQSvr%%GENBR%%.exe" /y
+	ECHO start "" "C:\GENESIS\GENSERVICES\%%EXE%%" %%GENCOMP%% %%GENBR%% AUTO
+	ECHO goto EXIT
+	ECHO :FOUND
+	ECHO echo SERVICE IS RUNNING
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+)>"C:\GENESIS\GENSERVICES\START-IC-HQ-SERVICE-%GENBR%.bat"
+schtasks /create /sc DAILY /st 06:00:00 /RI 1 /DU 24:00 /tn "genesisICHQSVR-%GENBR%" /RU "%SVRNAME%" /RP "%SVRPASS%" /tr "C:\GENESIS\GENSERVICES\START-IC-HQ-SERVICE-%GENBR%.bat"
+cls
+@echo ***** DONE *****
+@echo ***** CREATING CHECK SERVICES STATUS *****
+(
+	ECHO @echo off
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE1=gen*
+	ECHO :top
+	ECHO cls
+	ECHO TASKLIST /FI "IMAGENAME eq %%exe1%%"
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO timeout 60
+	ECHO goto top
+)>"C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat"
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%HOMEDRIVE%%HOMEPATH%\Desktop\CHECK SERVICES STATUS.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat" >> CreateShortcut.vbs
+echo olink.workingdirectory = "C:\GENESIS\GENSERVICES\" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\INSTALL\LOGO.ico" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+ping 127.0.0.1 -n 3 > nul
+goto TOPGENSVR
+
+:HQSERVICE
+@echo ***** CREATING HEAD OFFICE SYNC SERVICE *****
+copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genHQServer.exe" "C:\GENESIS\GENSERVICES\genHQServer%GENBR%.exe" /y
+(
+	ECHO echo off
+	ECHO cls
+	ECHO ======================
+	ECHO set GENCOMP=%GENCOMP%
+	ECHO set GENBR=%GENBR%
+	ECHO ======================
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE=genHQServer%%GENBR%%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXE%%"'^) DO IF %%%%x == %%EXE%% goto FOUND
+	ECHO echo SERVICE IS NOT RUNNING
+	ECHO echo ***** STARTING HEAD OFFICE SYNC SERVICE *****
+	ECHO echo %%GENBR%%
+	ECHO copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genHQServer.exe" "C:\GENESIS\GENSERVICES\genHQServer%%GENBR%%.exe" /y
+	ECHO start "" "C:\GENESIS\GENSERVICES\%%EXE%%" %%GENCOMP%% %%GENBR%% AUTO
+	ECHO goto EXIT
+	ECHO :FOUND
+	ECHO echo SERVICE IS RUNNING
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+)>"C:\GENESIS\GENSERVICES\START-HEAD-OFFICE-SERVICE-%GENBR%.bat"
+schtasks /create /sc DAILY /st 06:00:00 /RI 1 /DU 24:00 /tn "genesisHQSVR-%GENBR%" /RU "%SVRNAME%" /RP "%SVRPASS%" /tr "C:\GENESIS\GENSERVICES\START-HEAD-OFFICE-SERVICE-%GENBR%.bat"
+cls
+@echo ***** DONE *****
+@echo ***** CREATING CHECK SERVICES STATUS *****
+(
+	ECHO @echo off
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE1=gen*
+	ECHO :top
+	ECHO cls
+	ECHO TASKLIST /FI "IMAGENAME eq %%exe1%%"
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO timeout 60
+	ECHO goto top
+)>"C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat"
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%HOMEDRIVE%%HOMEPATH%\Desktop\CHECK SERVICES STATUS.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat" >> CreateShortcut.vbs
+echo olink.workingdirectory = "C:\GENESIS\GENSERVICES\" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\INSTALL\LOGO.ico" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+ping 127.0.0.1 -n 3 > nul
+goto TOPGENSVR
+
+:BRSERVICE
+@echo ***** CREATING BRANCH SYNC SERVICE *****
+copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genBRServer.exe" "C:\GENESIS\GENSERVICES\genBRServer%GENBR%.exe" /y
+(
+	ECHO echo off
+	ECHO cls
+	ECHO ======================
+	ECHO set GENCOMP=%GENCOMP%
+	ECHO set GENBR=%GENBR%
+	ECHO ======================
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE=genBRServer%%GENBR%%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXE%%"'^) DO IF %%%%x == %%EXE%% goto FOUND
+	ECHO echo SERVICE IS NOT RUNNING
+	ECHO echo ***** STARTING BRANCH SYNC SERVICE *****
+	ECHO echo %%GENBR%%
+	ECHO copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genBRServer.exe" "C:\GENESIS\GENSERVICES\genBRServer%%GENBR%%.exe" /y
+	ECHO start "" "C:\GENESIS\GENSERVICES\%%EXE%%" %%GENCOMP%% %%GENBR%% AUTO
+	ECHO goto EXIT
+	ECHO :FOUND
+	ECHO echo SERVICE IS RUNNING
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+)>"C:\GENESIS\GENSERVICES\START-BRANCH-SERVICE-%GENBR%.bat"
+schtasks /create /sc DAILY /st 06:00:00 /RI 1 /DU 24:00 /tn "genesisBRSVR-%GENBR%" /RU "%SVRNAME%" /RP "%SVRPASS%" /tr "C:\GENESIS\GENSERVICES\START-BRANCH-SERVICE-%GENBR%.bat"
+cls
+@echo ***** DONE *****
+@echo ***** CREATING CHECK SERVICES STATUS *****
+(
+	ECHO @echo off
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE1=gen*
+	ECHO :top
+	ECHO cls
+	ECHO TASKLIST /FI "IMAGENAME eq %%exe1%%"
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO timeout 60
+	ECHO goto top
+)>"C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat"
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%HOMEDRIVE%%HOMEPATH%\Desktop\CHECK SERVICES STATUS.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat" >> CreateShortcut.vbs
+echo olink.workingdirectory = "C:\GENESIS\GENSERVICES\" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\INSTALL\LOGO.ico" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+ping 127.0.0.1 -n 3 > nul
+goto TOPGENSVR
+
+:WEBSERVICE
+@echo ***** CREATING WEB SERVICE *****
+ping 127.0.0.1 -n 2 > nul
+@echo ----- CREATING UPLOAD SERVICE -----
+ping 127.0.0.1 -n 2 > nul
+copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genUploadSvr.exe" "C:\GENESIS\GENSERVICES\genUploadSvr%GENBR%.exe" /y
+(
+	ECHO echo off
+	ECHO cls
+	ECHO ======================
+	ECHO set GENCOMP=%GENCOMP%
+	ECHO set GENBR=%GENBR%
+	ECHO ======================
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE=genUploadSvr%%GENBR%%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXE%%"'^) DO IF %%%%x == %%EXE%% goto FOUND
+	ECHO echo SERVICE IS NOT RUNNING
+	ECHO echo ***** STARTING WEB UPLOAD SYNC SERVICE *****
+	ECHO echo %%GENBR%%
+	ECHO copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genUploadSvr.exe" "C:\GENESIS\GENSERVICES\genUploadSvr%%GENBR%%.exe" /y
+	ECHO start "" "C:\GENESIS\GENSERVICES\%%EXE%%" %%GENCOMP%% %%GENBR%% AUTO
+	ECHO goto EXIT
+	ECHO :FOUND
+	ECHO echo SERVICE IS RUNNING
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+)>"C:\GENESIS\GENSERVICES\START-WEB-UP-SERVICE-%GENBR%.bat"
+schtasks /create /sc DAILY /st 06:00:00 /RI 1 /DU 24:00 /tn "genesisWEBupSVR-%GENBR%" /RU "%SVRNAME%" /RP "%SVRPASS%" /tr "C:\GENESIS\GENSERVICES\START-WEB-UP-SERVICE-%GENBR%.bat"
+@echo ----- CREATING DOWNLOAD SERVICE -----
+ping 127.0.0.1 -n 2 > nul
+copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genDownloadSvr.exe" "C:\GENESIS\GENSERVICES\genDownloadSvr%GENBR%.exe" /y
+(
+	ECHO echo off
+	ECHO cls
+	ECHO ======================
+	ECHO set GENCOMP=%GENCOMP%
+	ECHO set GENBR=%GENBR%
+	ECHO ======================
+	
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE=genDownloadSvr%%GENBR%%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXE%%"'^) DO IF %%%%x == %%EXE%% goto FOUND
+	ECHO echo SERVICE IS NOT RUNNING
+	ECHO echo ***** STARTING WEB DOWNLOAD SYNC SERVICE *****
+	ECHO echo %%GENBR%%
+	ECHO copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genDownloadSvr.exe" "C:\GENESIS\GENSERVICES\genDownloadSvr%%GENBR%%.exe" /y
+	ECHO start "" "C:\GENESIS\GENSERVICES\%%EXE%%" %%GENCOMP%% %%GENBR%% AUTO
+	ECHO goto EXIT
+	ECHO :FOUND
+	ECHO echo SERVICE IS RUNNING
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+)>"C:\GENESIS\GENSERVICES\START-WEB-DOWNLOAD-SERVICE-%GENBR%.bat"
+schtasks /create /sc DAILY /st 06:00:00 /RI 1 /DU 24:00 /tn "genesisWEBdownSVR-%GENBR%" /RU "%SVRNAME%" /RP "%SVRPASS%" /tr "C:\GENESIS\GENSERVICES\START-WEB-DOWNLOAD-SERVICE-%GENBR%.bat"
+ping 127.0.0.1 -n 3 >nul
+@echo ----- CREATING WOOCOMMERCE SERVICE -----
+ping 127.0.0.1 -n 2 > nul
+copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genWCS.exe" "C:\GENESIS\GENSERVICES\genWCS%GENBR%.exe" /y
+(
+	ECHO echo off
+	ECHO cls
+	ECHO ======================
+	ECHO set GENCOMP=%GENCOMP%
+	ECHO set GENBR=%GENBR%
+	ECHO ======================
+	
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE=genWCS%%GENBR%%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXE%%"'^) DO IF %%%%x == %%EXE%% goto FOUND
+	ECHO echo SERVICE IS NOT RUNNING
+	ECHO echo ***** STARTING WEB DOWNLOAD SYNC SERVICE *****
+	ECHO echo %%GENBR%%
+	ECHO copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genWCS.exe" "C:\GENESIS\GENSERVICES\genWCS%%GENBR%%.exe" /y
+	ECHO start "" "C:\GENESIS\GENSERVICES\%%EXE%%" CO %%GENCOMP%% %%GENBR%% AUTO
+	ECHO goto EXIT
+	ECHO :FOUND
+	ECHO echo SERVICE IS RUNNING
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+)>"C:\GENESIS\GENSERVICES\START-WOOC-SERVICE-%GENBR%.bat"
+schtasks /create /sc DAILY /st 06:00:00 /RI 1 /DU 24:00 /tn "genesisWOOCSVR-%GENBR%" /RU "%SVRNAME%" /RP "%SVRPASS%" /tr "C:\GENESIS\GENSERVICES\START-WOOC-SERVICE-%GENBR%.bat"
+ping 127.0.0.1 -n 3 >nul
+cls
+@echo ***** DONE *****
+@echo ***** CREATING CHECK SERVICES STATUS *****
+(
+	ECHO @echo off
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE1=gen*
+	ECHO :top
+	ECHO cls
+	ECHO TASKLIST /FI "IMAGENAME eq %%exe1%%"
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO timeout 60
+	ECHO goto top
+)>"C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat"
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%HOMEDRIVE%%HOMEPATH%\Desktop\CHECK SERVICES STATUS.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat" >> CreateShortcut.vbs
+echo olink.workingdirectory = "C:\GENESIS\GENSERVICES\" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\INSTALL\LOGO.ico" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+ping 127.0.0.1 -n 3 > nul
+goto TOPGENSVR
+
+:HOSERVICE
+@echo ***** CREATING HEAD OFFICE SYNC SERVICE *****
+copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genHOSvr.exe" "C:\GENESIS\GENSERVICES\genHOSvr%GENBR%.exe" /y
+(
+	ECHO echo off
+	ECHO cls
+	ECHO ======================
+	ECHO set GENCOMP=%GENCOMP%
+	ECHO set GENBR=%GENBR%
+	ECHO ======================
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE=genHOSvr%%GENBR%%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXE%%"'^) DO IF %%%%x == %%EXE%% goto FOUND
+	ECHO echo SERVICE IS NOT RUNNING
+	ECHO echo ***** STARTING HO SYNC SERVICE *****
+	ECHO echo %%GENBR%%
+	ECHO copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genHOSvr.exe" "C:\GENESIS\GENSERVICES\genHOSvr%%GENBR%%.exe" /y
+	ECHO start "" "C:\GENESIS\GENSERVICES\%%EXE%%" %%GENCOMP%% %%GENBR%% AUTO
+	ECHO goto EXIT
+	ECHO :FOUND
+	ECHO echo SERVICE IS RUNNING
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+)>"C:\GENESIS\GENSERVICES\START-HO-SERVICE-%GENBR%.bat"
+schtasks /create /sc DAILY /st 06:00:00 /RI 1 /DU 24:00 /tn "genesisHOSvr-%GENBR%" /RU "%SVRNAME%" /RP "%SVRPASS%" /tr "C:\GENESIS\GENSERVICES\START-HO-SERVICE-%GENBR%.bat"
+cls
+@echo ***** DONE *****
+@echo ***** CREATING CHECK SERVICES STATUS *****
+(
+	ECHO @echo off
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE1=gen*
+	ECHO :top
+	ECHO cls
+	ECHO TASKLIST /FI "IMAGENAME eq %%exe1%%"
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO timeout 60
+	ECHO goto top
+)>"C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat"
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%HOMEDRIVE%%HOMEPATH%\Desktop\CHECK SERVICES STATUS.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat" >> CreateShortcut.vbs
+echo olink.workingdirectory = "C:\GENESIS\GENSERVICES\" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\INSTALL\LOGO.ico" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+ping 127.0.0.1 -n 3 > nul
+goto TOPGENSVR
+
+:BRASERVICE
+@echo ***** CREATING BRANCH SYNC SERVICE *****
+copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genBranchSvr.exe" "C:\GENESIS\GENSERVICES\genBranchSvr%GENBR%.exe" /y
+(
+	ECHO echo off
+	ECHO cls
+	ECHO ======================
+	ECHO set GENCOMP=%GENCOMP%
+	ECHO set GENBR=%GENBR%
+	ECHO ======================
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE=genBranchSvr%%GENBR%%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXE%%"'^) DO IF %%%%x == %%EXE%% goto FOUND
+	ECHO echo SERVICE IS NOT RUNNING
+	ECHO echo ***** STARTING BRANCH SYNC SERVICE *****
+	ECHO echo %%GENBR%%
+	ECHO copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genBranchSvr.exe" "C:\GENESIS\GENSERVICES\genBranchSvr%%GENBR%%.exe" /y
+	ECHO start "" "C:\GENESIS\GENSERVICES\%%EXE%%" %%GENCOMP%% %%GENBR%% AUTO
+	ECHO goto EXIT
+	ECHO :FOUND
+	ECHO echo SERVICE IS RUNNING
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+)>"C:\GENESIS\GENSERVICES\START-BRANCH-SERVER-%GENBR%.bat"
+schtasks /create /sc DAILY /st 06:00:00 /RI 1 /DU 24:00 /tn "genesisBRSVR-%GENBR%" /RU "%SVRNAME%" /RP "%SVRPASS%" /tr "C:\GENESIS\GENSERVICES\START-BRANCH-SERVER-%GENBR%.bat"
+cls
+@echo ***** DONE *****
+@echo ***** CREATING CHECK SERVICES STATUS *****
+(
+	ECHO @echo off
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE1=gen*
+	ECHO :top
+	ECHO cls
+	ECHO TASKLIST /FI "IMAGENAME eq %%exe1%%"
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO timeout 60
+	ECHO goto top
+)>"C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat"
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%HOMEDRIVE%%HOMEPATH%\Desktop\CHECK SERVICES STATUS.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat" >> CreateShortcut.vbs
+echo olink.workingdirectory = "C:\GENESIS\GENSERVICES\" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\INSTALL\LOGO.ico" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+ping 127.0.0.1 -n 3 > nul
+goto TOPGENSVR
+
+:HOSERVER
+@echo ***** CREATING HEAD OFFICE SERVER SERVICE (OFFLINE TILL) *****
+copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genHQServer.exe" "C:\GENESIS\GENSERVICES\genHQServer%GENBR%.exe" /y
+(
+	ECHO echo off
+	ECHO cls
+	ECHO ======================
+	ECHO set GENGRP=%GENGRP%
+	ECHO ======================
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE=genHQServer%%GENGRP%%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXE%%"'^) DO IF %%%%x == %%EXE%% goto FOUND
+	ECHO echo SERVICE IS NOT RUNNING
+	ECHO echo ***** STARTING HEAD OFFICE SERVER SERVICE *****
+	ECHO echo %%GENGRP%%
+	ECHO copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genHQServer.exe" "C:\GENESIS\GENSERVICES\genHQServer%%GENGRP%%.exe" /y
+	ECHO start "" "C:\GENESIS\GENSERVICES\%%EXE%%" %%GENGRP%% AUTO
+	ECHO goto EXIT
+	ECHO :FOUND
+	ECHO echo SERVICE IS RUNNING
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+)>"C:\GENESIS\GENSERVICES\START-HEADOFFICE-SERVER-%GENGRP%.bat"
+schtasks /create /sc DAILY /st 06:00:00 /RI 1 /DU 24:00 /tn "genesisHQserver-%GENGRP%" /RU "%SVRNAME%" /RP "%SVRPASS%" /tr "C:\GENESIS\GENSERVICES\START-HEADOFFICE-SERVER-%GENGRP%.bat"
+cls
+@echo ***** DONE *****
+@echo ***** CREATING CHECK SERVICES STATUS *****
+(
+	ECHO @echo off
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE1=gen*
+	ECHO :top
+	ECHO cls
+	ECHO TASKLIST /FI "IMAGENAME eq %%exe1%%"
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO timeout 60
+	ECHO goto top
+)>"C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat"
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%HOMEDRIVE%%HOMEPATH%\Desktop\CHECK SERVICES STATUS.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat" >> CreateShortcut.vbs
+echo olink.workingdirectory = "C:\GENESIS\GENSERVICES\" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\INSTALL\LOGO.ico" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+ping 127.0.0.1 -n 3 > nul
+goto TOPGENSVR
+
+:EODSERVICE
+@echo ***** CREATING END OF DAY-MONTH SERVICE *****
+ping 127.0.0.1 -n 3 > nul
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genEOD%GENBR%.exe" "C:\GENESIS\GENSERVICES" /D /y
+(
+	ECHO echo off
+	ECHO SETLOCAL EnableExtensions
+	ECHO cls
+	ECHO echo ***** KILL EOD-EOM TASK *****
+	ECHO set EOD1=genEOD%GENBR%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EOD1%%"'^) DO IF %%%%x == %%EOD1%% goto EODop1
+	ECHO echo %%EOD1%% SERVICE IS NOT RUNNING
+	ECHO goto STEOD
+	ECHO :EODop1
+	ECHO taskkill /IM %%EOD1%% /f
+	ECHO :STEOD
+	ECHO echo off
+	ECHO cls
+	ECHO If "%%1"=="" goto gdate
+	ECHO set date="%%1"
+	ECHO goto start
+	ECHO :gdate
+	ECHO set /p date=Give Date:
+	ECHO :start
+	ECHO ======================
+	ECHO set GENCOMP=%GENCOMP%
+	ECHO set GENBR=%GENBR%
+	ECHO set RUNDATE=%%date%%
+	ECHO ======================
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE=genEOD%%GENBR%%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXE%%"'^) DO IF %%%%x == %%EXE%% goto FOUND
+	ECHO echo SERVICE IS NOT RUNNING
+	ECHO echo ***** STARTING EOD-EOM SERVICE *****
+	ECHO echo %%GENBR%%
+	ECHO copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genEOD.exe" "C:\GENESIS\GENSERVICES\genEOD%%GENBR%%.exe" /y
+	ECHO start "" "C:\GENESIS\GENSERVICES\%%EXE%%" %%GENCOMP%% %%GENBR%% %%RUNDATE%%
+	ECHO goto EXIT
+	ECHO :FOUND
+	ECHO echo SERVICE IS RUNNING
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+)>"C:\GENESIS\GENSERVICES\START-EOD-EOM-SERVICE-%GENBR%.bat"
+schtasks /create /sc DAILY /st 21:00:00 /tn "genesisEOD-EOM-%GENBR%" /RU "%SVRNAME%" /RP "%SVRPASS%" /tr "C:\GENESIS\GENSERVICES\START-EOD-EOM-SERVICE-%GENBR%.bat %%DATE%%"
+cls
+@echo ***** DONE *****
+@echo ***** CREATING CHECK SERVICES STATUS *****
+(
+	ECHO @echo off
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE1=gen*
+	ECHO :top
+	ECHO cls
+	ECHO TASKLIST /FI "IMAGENAME eq %%exe1%%"
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO timeout 60
+	ECHO goto top
+)>"C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat"
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%HOMEDRIVE%%HOMEPATH%\Desktop\CHECK SERVICES STATUS.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat" >> CreateShortcut.vbs
+echo olink.workingdirectory = "C:\GENESIS\GENSERVICES\" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\INSTALL\LOGO.ico" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+ping 127.0.0.1 -n 3 > nul
+goto TOPGENSVR
+
+:GRPSERVICE
+cls
+ECHO =========================================
+ECHO PLEASE PROVIDE SERVER DETAIL THATS NEEDED
+ECHO =========================================
+set /p SVRNAME=SERVER USERNAME:
+set /p SVRPASS=SERVER PASSWORD:
+set /p GENGRPNAME=GENESIS GROUP NAME:
+set /p GENGRP=STORE GROUP CODE:
+(
+	ECHO @echo off
+	ECHO SETLOCAL EnableExtensions
+	ECHO cls
+	ECHO echo ***** CLOSING ALL OPEN SERVICES *****
+	ECHO set EXEEOD1=genEOD%GENGRP%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXEEOD1%%"'^) DO IF %%%%x == %%EXEEOD1%% goto EODop1
+	ECHO echo %%EXEEOD1%% SERVICE IS NOT RUNNING
+	ECHO goto EXEBRS1
+	ECHO :EODop1
+	ECHO taskkill /IM %%EXEEOD1%%
+	
+	ECHO :EXEBRS1
+	ECHO set EXEBRS1=GENGRPServer%GENGRP%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXEBRS1%%"'^) DO IF %%%%x == %%EXEBRS1%% goto BRSop1
+	ECHO echo %%EXEBRS1%% SERVICE IS NOT RUNNING
+	ECHO goto EXEHQS1
+	ECHO :BRSop1
+	ECHO taskkill /IM %%EXEBRS1%% /F
+	
+	ECHO :EXEHQS1
+	ECHO set EXEHQS1=genHQServer%GENGRP%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXEHQS1%%"'^) DO IF %%%%x == %%EXEHQS1%% goto HQSop1
+	ECHO echo %%EXEHQS1%% SERVICE IS NOT RUNNING
+	ECHO goto EXEBRA1
+	ECHO :HQSop1
+	ECHO taskkill /IM %%EXEHQS1%% /F
+	
+	ECHO :EXEBRA1
+	ECHO set EXEBRA1=GENGRPanchSvr%GENGRP%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXEBRA1%%"'^) DO IF %%%%x == %%EXEBRA1%% goto BRAop1
+	ECHO echo %%EXEBRA1%% SERVICE IS NOT RUNNING
+	ECHO goto EXEHOS1
+	ECHO :BRAop1
+	ECHO taskkill /IM %%EXEBRA1%% /F
+	
+	ECHO :EXEHOS1
+	ECHO set EXEHOS1=genHOSvr%GENGRP%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXEHOS1%%"'^) DO IF %%%%x == %%EXEHOS1%% goto HOSop1
+	ECHO echo %%EXEHOS1%% SERVICE IS NOT RUNNING
+	ECHO goto EXEWDS1
+	ECHO :HOSop1
+	ECHO taskkill /IM %%EXEHOS1%% /F
+	
+	ECHO :EXEWDS1
+	ECHO set EXEWDS1=genDownloadSvr%GENGRP%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXEWDS1%%"'^) DO IF %%%%x == %%EXEWDS1%% goto WDSop1
+	ECHO echo %%EXEWDS1%% SERVICE IS NOT RUNNING
+	ECHO goto EXEWUS1
+	ECHO :WDSop1
+	ECHO taskkill /IM %%EXEWDS1%% /F
+	
+	ECHO :EXEWUS1
+	ECHO set EXEWUS1=genUploadSvr%GENGRP%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXEWUS1%%"'^) DO IF %%%%x == %%EXEWUS1%% goto WUSop1
+	ECHO echo %%EXEWUS1%% SERVICE IS NOT RUNNING
+	ECHO goto EXEHQSV1
+	ECHO :WUSop1
+	ECHO taskkill /IM %%EXEWUS1%% /F
+
+	ECHO :EXEHQSV1
+	ECHO set EXEHQSV1=genHQServer%GENGRP%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXEHQSV1%%"'^) DO IF %%%%x == %%EXEHQSV1%% goto ICSSop1
+	ECHO echo %%EXEHQSV1%% SERVICE IS NOT RUNNING
+	ECHO goto EXEICSS1
+	ECHO :ICSSop1
+	ECHO taskkill /IM %%EXEHQSV1%% /F
+	
+	ECHO :EXEICSS1
+	ECHO set EXEICSS1=genICStoreSvr%GENGRP%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXEICSS1%%"'^) DO IF %%%%x == %%EXEICSS1%% goto ICSSop1
+	ECHO echo %%EXEICSS1%% SERVICE IS NOT RUNNING
+	ECHO goto EXEICHS1
+	ECHO :ICSSop1
+	ECHO taskkill /IM %%EXEICSS1%% /F
+	
+	ECHO :EXEICHS1
+	ECHO set EXEICHS1=genICHQSvr%GENGRP%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXEICHS1%%"'^) DO IF %%%%x == %%EXEICHS1%% goto ICHSop1
+	ECHO echo %%EXEICHS1%% SERVICE IS NOT RUNNING
+	ECHO goto ICHsnf1
+	ECHO :ICHSop1
+	ECHO taskkill /IM %%EXEICHS1%% /F
+	ECHO :ICHsnf1
+	ECHO timeout 60
+	ECHO EXIT
+)>"C:\GENESIS\GENSERVICES\STOP-ALL-SERVICES-%GENGRP%.bat"
+schtasks /create /sc DAILY /st 06:00:00 /RI 240 /DU 24:00 /tn "GENESIS STOP ALL SERVICES %GENGRP%" /RU "%SVRNAME%" /RP "%SVRPASS%" /tr "C:\GENESIS\GENSERVICES\STOP-ALL-SERVICES-%GENGRP%.bat"
+sqlcmd -U sa -P Pa$$w0rD -S (local) -Q "CREATE DATABASE [GENESIS-%GENGRP%-VPN]"
+
+
+:TOPGENGRPSVR
+cls
+ECHO USERNAME:%SVRNAME% USERPASSWORD:%SVRPASS%
+cls
+ECHO USERNAME:%SVRNAME% USERPASSWORD:%SVRPASS%
+ECHO GENGRPNAME: %GENGRPNAME%
+ECHO GENESIS GROUP CODE: %GENGRP%
+ECHO.
+ECHO ........................................................................
+ECHO SELECT YOUR OPTION BY TYPING THE CORESPONDING NUMBER AND THEN ENTER KEY.
+ECHO ........................................................................
+ECHO.
+ECHO  1 - CREATE IC STORE SERVICE
+ECHO  2 - CREATE IC HEAD OFFICE SERVICE
+::ECHO  3 - CREATE HEAD OFFICE SERVICE
+::ECHO  4 - CREATE BRANCH SERVICES
+::ECHO  5 - CREATE WEB SERVICE
+::ECHO  6 - CREATE HO SERVICE (KITKAT)
+::ECHO  7 - CREATE BRANCH SERVICE (KITKAT)
+ECHO  3 - CREATE HEAD OFFICE SERVER SERVICE (OFFLINE TIIL)
+::ECHO  9 - CREATE END OF DAY SERVICE
+ECHO 10 - UPDATE DETAILS
+ECHO 99 - MAIN MENU
+
+ECHO.
+SET /P option=Select a task then press ENTER:
+IF %option%==1 GOTO ICSTSRVGRP
+IF %option%==2 GOTO ICHQSRVGRP
+::IF %option%==3 GOTO HQSRVGRP
+::IF %option%==4 GOTO BRSRVGRP
+::IF %option%==5 GOTO WEBSRVGRP
+::IF %option%==6 GOTO HOSRVGRP
+::IF %option%==7 GOTO BRASRVGRP
+IF %option%==3 GOTO HOOSRVGRP
+::IF %option%==9 GOTO EODSRVGRP
+IF %option%==10 GOTO GRPSERVICE
+IF %option%==99 GOTO MENU
+IF %option%=="%option%" GOTO TOPGENGRPSVR
+goto TOPGENGRPSVR
+
+:ICSTSRVGRP
+@echo ***** CREATING IC STORE SYNC SERVICE*****
+copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genICStoreSvr.exe" "C:\GENESIS\GENSERVICES\genICStoreSvr%GENGRP%.exe" /y
+(
+	ECHO echo off
+	ECHO cls
+	ECHO ======================
+	ECHO set GENGRPNAME=%GENGRPNAME%
+	ECHO set GENGRP=%GENGRP%
+	ECHO ======================
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE=genICStoreSvr%%GENGRP%%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXE%%"'^) DO IF %%%%x == %%EXE%% goto FOUND
+	ECHO echo SERVICE IS NOT RUNNING
+	ECHO echo ***** STARTING BRANCH SYNC SERVICE *****
+	ECHO echo %%GENGRP%%
+	ECHO copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genICStoreSvr.exe" "C:\GENESIS\GENSERVICES\genICStoreSvr%%GENGRP%%.exe" /y
+	ECHO start "" "C:\GENESIS\GENSERVICES\%%EXE%%" CAT %%GENGRP%% AUTO
+	ECHO goto EXIT
+	ECHO :FOUND
+	ECHO echo SERVICE IS RUNNING
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+)>"C:\GENESIS\GENSERVICES\START-IC-STORE-SERVICE-%GENGRP%.bat"
+schtasks /create /sc DAILY /st 06:00:00 /RI 1 /DU 24:00 /tn "genesisICstoreSVR-%GENGRP%" /RU "%SVRNAME%" /RP "%SVRPASS%" /tr "C:\GENESIS\GENSERVICES\START-IC-STORE-SERVICE-%GENGRP%.bat"
+cls
+@echo ***** DONE *****
+@echo ***** CREATING CHECK SERVICES STATUS *****
+(
+	ECHO @echo off
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE1=gen*
+	ECHO :top
+	ECHO cls
+	ECHO TASKLIST /FI "IMAGENAME eq %%exe1%%"
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO timeout 60
+	ECHO goto top
+)>"C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat"
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%HOMEDRIVE%%HOMEPATH%\Desktop\CHECK SERVICES STATUS.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat" >> CreateShortcut.vbs
+echo olink.workingdirectory = "C:\GENESIS\GENSERVICES\" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\INSTALL\LOGO.ico" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+ping 127.0.0.1 -n 3 > nul
+goto TOPGENGRPSVR
+
+:ICHQSRVGRP
+@echo ***** CREATING IC HEAD OFFICE SERVICE *****
+copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genICHQSvr.exe" "C:\GENESIS\GENSERVICES\genICHQSvr%GENGRP%.exe" /y
+(
+	ECHO echo off
+	ECHO cls
+	ECHO ======================
+	ECHO set GENGRPNAME=%GENGRPNAME%
+	ECHO set GENGRP=%GENGRP%
+	ECHO ======================
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE=genICHQSvr%%GENGRP%%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXE%%"'^) DO IF %%%%x == %%EXE%% goto FOUND
+	ECHO echo SERVICE IS NOT RUNNING
+	ECHO echo ***** STARTING HEAD OFFICE SYNC SERVICE *****
+	ECHO echo %%GENGRP%%
+	ECHO copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genICHQSvr.exe" "C:\GENESIS\GENSERVICES\genICHQSvr%%GENGRP%%.exe" /y
+	ECHO start "" "C:\GENESIS\GENSERVICES\%%EXE%%" CAT %%GENGRP%% AUTO
+	ECHO goto EXIT
+	ECHO :FOUND
+	ECHO echo SERVICE IS RUNNING
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+)>"C:\GENESIS\GENSERVICES\START-IC-HQ-SERVICE-%GENGRP%.bat"
+schtasks /create /sc DAILY /st 06:00:00 /RI 1 /DU 24:00 /tn "genesisICHQSVR-%GENGRP%" /RU "%SVRNAME%" /RP "%SVRPASS%" /tr "C:\GENESIS\GENSERVICES\START-IC-HQ-SERVICE-%GENGRP%.bat"
+cls
+@echo ***** DONE *****
+@echo ***** CREATING CHECK SERVICES STATUS *****
+(
+	ECHO @echo off
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE1=gen*
+	ECHO :top
+	ECHO cls
+	ECHO TASKLIST /FI "IMAGENAME eq %%exe1%%"
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO timeout 60
+	ECHO goto top
+)>"C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat"
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%HOMEDRIVE%%HOMEPATH%\Desktop\CHECK SERVICES STATUS.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat" >> CreateShortcut.vbs
+echo olink.workingdirectory = "C:\GENESIS\GENSERVICES\" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\INSTALL\LOGO.ico" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+ping 127.0.0.1 -n 3 > nul
+goto TOPGENGRPSVR
+
+:HQSRVGRP
+@echo ***** CREATING HEAD OFFICE SYNC SERVICE *****
+copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genHQServer.exe" "C:\GENESIS\GENSERVICES\genHQServer%GENGRP%.exe" /y
+(
+	ECHO echo off
+	ECHO cls
+	ECHO ======================
+	ECHO set GENGRPNAME=%GENGRPNAME%
+	ECHO set GENGRP=%GENGRP%
+	ECHO ======================
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE=genHQServer%%GENGRP%%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXE%%"'^) DO IF %%%%x == %%EXE%% goto FOUND
+	ECHO echo SERVICE IS NOT RUNNING
+	ECHO echo ***** STARTING HEAD OFFICE SYNC SERVICE *****
+	ECHO echo %%GENGRP%%
+	ECHO copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genHQServer.exe" "C:\GENESIS\GENSERVICES\genHQServer%%GENGRP%%.exe" /y
+	ECHO start "" "C:\GENESIS\GENSERVICES\%%EXE%%" CAT %%GENGRP%% AUTO
+	ECHO goto EXIT
+	ECHO :FOUND
+	ECHO echo SERVICE IS RUNNING
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+)>"C:\GENESIS\GENSERVICES\START-HEAD-OFFICE-SERVICE-%GENGRP%.bat"
+schtasks /create /sc DAILY /st 06:00:00 /RI 1 /DU 24:00 /tn "genesisHQSVR-%GENGRP%" /RU "%SVRNAME%" /RP "%SVRPASS%" /tr "C:\GENESIS\GENSERVICES\START-HEAD-OFFICE-SERVICE-%GENGRP%.bat"
+cls
+@echo ***** DONE *****
+@echo ***** CREATING CHECK SERVICES STATUS *****
+(
+	ECHO @echo off
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE1=gen*
+	ECHO :top
+	ECHO cls
+	ECHO TASKLIST /FI "IMAGENAME eq %%exe1%%"
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO timeout 60
+	ECHO goto top
+)>"C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat"
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%HOMEDRIVE%%HOMEPATH%\Desktop\CHECK SERVICES STATUS.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat" >> CreateShortcut.vbs
+echo olink.workingdirectory = "C:\GENESIS\GENSERVICES\" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\INSTALL\LOGO.ico" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+ping 127.0.0.1 -n 3 > nul
+goto TOPGENGRPSVR
+
+:BRSRVGRP
+@echo ***** CREATING BRANCH SYNC SERVICE *****
+copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\GENGRPServer.exe" "C:\GENESIS\GENSERVICES\GENGRPServer%GENGRP%.exe" /y
+(
+	ECHO echo off
+	ECHO cls
+	ECHO ======================
+	ECHO set GENGRPNAME=%GENGRPNAME%
+	ECHO set GENGRP=%GENGRP%
+	ECHO ======================
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE=GENGRPServer%%GENGRP%%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXE%%"'^) DO IF %%%%x == %%EXE%% goto FOUND
+	ECHO echo SERVICE IS NOT RUNNING
+	ECHO echo ***** STARTING BRANCH SYNC SERVICE *****
+	ECHO echo %%GENGRP%%
+	ECHO copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\GENGRPServer.exe" "C:\GENESIS\GENSERVICES\GENGRPServer%%GENGRP%%.exe" /y
+	ECHO start "" "C:\GENESIS\GENSERVICES\%%EXE%%" CAT %%GENGRP%% AUTO
+	ECHO goto EXIT
+	ECHO :FOUND
+	ECHO echo SERVICE IS RUNNING
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+)>"C:\GENESIS\GENSERVICES\START-BRANCH-SERVICE-%GENGRP%.bat"
+schtasks /create /sc DAILY /st 06:00:00 /RI 1 /DU 24:00 /tn "genesisBRSVR-%GENGRP%" /RU "%SVRNAME%" /RP "%SVRPASS%" /tr "C:\GENESIS\GENSERVICES\START-BRANCH-SERVICE-%GENGRP%.bat"
+cls
+@echo ***** DONE *****
+@echo ***** CREATING CHECK SERVICES STATUS *****
+(
+	ECHO @echo off
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE1=gen*
+	ECHO :top
+	ECHO cls
+	ECHO TASKLIST /FI "IMAGENAME eq %%exe1%%"
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO timeout 60
+	ECHO goto top
+)>"C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat"
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%HOMEDRIVE%%HOMEPATH%\Desktop\CHECK SERVICES STATUS.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat" >> CreateShortcut.vbs
+echo olink.workingdirectory = "C:\GENESIS\GENSERVICES\" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\INSTALL\LOGO.ico" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+ping 127.0.0.1 -n 3 > nul
+goto TOPGENGRPSVR
+
+:WEBSRVGRP
+@echo ***** CREATING WEB SERVICE *****
+ping 127.0.0.1 -n 2 > nul
+@echo ----- CREATING UPLOAD SERVICE -----
+ping 127.0.0.1 -n 2 > nul
+copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genUploadSvr.exe" "C:\GENESIS\GENSERVICES\genUploadSvr%GENGRP%.exe" /y
+(
+	ECHO echo off
+	ECHO cls
+	ECHO ======================
+	ECHO set GENGRPNAME=%GENGRPNAME%
+	ECHO set GENGRP=%GENGRP%
+	ECHO ======================
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE=genUploadSvr%%GENGRP%%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXE%%"'^) DO IF %%%%x == %%EXE%% goto FOUND
+	ECHO echo SERVICE IS NOT RUNNING
+	ECHO echo ***** STARTING WEB UPLOAD SYNC SERVICE *****
+	ECHO echo %%GENGRP%%
+	ECHO copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genUploadSvr.exe" "C:\GENESIS\GENSERVICES\genUploadSvr%%GENGRP%%.exe" /y
+	ECHO start "" "C:\GENESIS\GENSERVICES\%%EXE%%" CAT %%GENGRP%% AUTO
+	ECHO goto EXIT
+	ECHO :FOUND
+	ECHO echo SERVICE IS RUNNING
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+)>"C:\GENESIS\GENSERVICES\START-WEB-UP-SERVICE-%GENGRP%.bat"
+schtasks /create /sc DAILY /st 06:00:00 /RI 1 /DU 24:00 /tn "genesisWEBupSVR-%GENGRP%" /RU "%SVRNAME%" /RP "%SVRPASS%" /tr "C:\GENESIS\GENSERVICES\START-WEB-UP-SERVICE-%GENGRP%.bat"
+@echo ----- CREATING DOWNLOAD SERVICE -----
+ping 127.0.0.1 -n 2 > nul
+copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genDownloadSvr.exe" "C:\GENESIS\GENSERVICES\genDownloadSvr%GENGRP%.exe" /y
+(
+	ECHO echo off
+	ECHO cls
+	ECHO ======================
+	ECHO set GENGRPNAME=%GENGRPNAME%
+	ECHO set GENGRP=%GENGRP%
+	ECHO ======================
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE=genDownloadSvr%%GENGRP%%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXE%%"'^) DO IF %%%%x == %%EXE%% goto FOUND
+	ECHO echo SERVICE IS NOT RUNNING
+	ECHO echo ***** STARTING WEB DOWNLOAD SYNC SERVICE *****
+	ECHO echo %%GENGRP%%
+	ECHO copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genDownloadSvr.exe" "C:\GENESIS\GENSERVICES\genDownloadSvr%%GENGRP%%.exe" /y
+	ECHO start "" "C:\GENESIS\GENSERVICES\%%EXE%%" CAT %%GENGRP%% AUTO
+	ECHO goto EXIT
+	ECHO :FOUND
+	ECHO echo SERVICE IS RUNNING
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+)>"C:\GENESIS\GENSERVICES\START-WEB-DOWNLOAD-SERVICE-%GENGRP%.bat"
+schtasks /create /sc DAILY /st 06:00:00 /RI 1 /DU 24:00 /tn "genesisWEBdownSVR-%GENGRP%" /RU "%SVRNAME%" /RP "%SVRPASS%" /tr "C:\GENESIS\GENSERVICES\START-WEB-DOWNLOAD-SERVICE-%GENGRP%.bat"
+ping 127.0.0.1 -n 3 >nul
+cls
+@echo ***** DONE *****
+@echo ***** CREATING CHECK SERVICES STATUS *****
+(
+	ECHO @echo off
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE1=gen*
+	ECHO :top
+	ECHO cls
+	ECHO TASKLIST /FI "IMAGENAME eq %%exe1%%"
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO timeout 60
+	ECHO goto top
+)>"C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat"
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%HOMEDRIVE%%HOMEPATH%\Desktop\CHECK SERVICES STATUS.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat" >> CreateShortcut.vbs
+echo olink.workingdirectory = "C:\GENESIS\GENSERVICES\" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\INSTALL\LOGO.ico" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+ping 127.0.0.1 -n 3 > nul
+goto TOPGENGRPSVR
+
+:HOSRVGRP
+@echo ***** CREATING HEAD OFFICE SYNC SERVICE *****
+copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genHOSvr.exe" "C:\GENESIS\GENSERVICES\genHOSvr%GENGRP%.exe" /y
+(
+	ECHO echo off
+	ECHO cls
+	ECHO ======================
+	ECHO set GENGRPNAME=%GENGRPNAME%
+	ECHO set GENGRP=%GENGRP%
+	ECHO ======================
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE=genHOSvr%%GENGRP%%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXE%%"'^) DO IF %%%%x == %%EXE%% goto FOUND
+	ECHO echo SERVICE IS NOT RUNNING
+	ECHO echo ***** STARTING HO SYNC SERVICE *****
+	ECHO echo %%GENGRP%%
+	ECHO copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genHOSvr.exe" "C:\GENESIS\GENSERVICES\genHOSvr%%GENGRP%%.exe" /y
+	ECHO start "" "C:\GENESIS\GENSERVICES\%%EXE%%" CAT %%GENGRP%% AUTO
+	ECHO goto EXIT
+	ECHO :FOUND
+	ECHO echo SERVICE IS RUNNING
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+)>"C:\GENESIS\GENSERVICES\START-HO-SERVICE-%GENGRP%.bat"
+schtasks /create /sc DAILY /st 06:00:00 /RI 1 /DU 24:00 /tn "genesisHOSvr-%GENGRP%" /RU "%SVRNAME%" /RP "%SVRPASS%" /tr "C:\GENESIS\GENSERVICES\START-HO-SERVICE-%GENGRP%.bat"
+cls
+@echo ***** DONE *****
+@echo ***** CREATING CHECK SERVICES STATUS *****
+(
+	ECHO @echo off
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE1=gen*
+	ECHO :top
+	ECHO cls
+	ECHO TASKLIST /FI "IMAGENAME eq %%exe1%%"
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO timeout 60
+	ECHO goto top
+)>"C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat"
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%HOMEDRIVE%%HOMEPATH%\Desktop\CHECK SERVICES STATUS.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat" >> CreateShortcut.vbs
+echo olink.workingdirectory = "C:\GENESIS\GENSERVICES\" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\INSTALL\LOGO.ico" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+ping 127.0.0.1 -n 3 > nul
+goto TOPGENGRPSVR
+
+:BRASRVGRP
+@echo ***** CREATING BRANCH SYNC SERVICE *****
+copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\GENGRPanchSvr.exe" "C:\GENESIS\GENSERVICES\GENGRPanchSvr%GENGRP%.exe" /y
+(
+	ECHO echo off
+	ECHO cls
+	ECHO ======================
+	ECHO set GENGRPNAME=%GENGRPNAME%
+	ECHO set GENGRP=%GENGRP%
+	ECHO ======================
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE=GENGRPanchSvr%%GENGRP%%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXE%%"'^) DO IF %%%%x == %%EXE%% goto FOUND
+	ECHO echo SERVICE IS NOT RUNNING
+	ECHO echo ***** STARTING BRANCH SYNC SERVICE *****
+	ECHO echo %%GENGRP%%
+	ECHO copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\GENGRPanchSvr.exe" "C:\GENESIS\GENSERVICES\GENGRPanchSvr%%GENGRP%%.exe" /y
+	ECHO start "" "C:\GENESIS\GENSERVICES\%%EXE%%" CAT %%GENGRP%% AUTO
+	ECHO goto EXIT
+	ECHO :FOUND
+	ECHO echo SERVICE IS RUNNING
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+)>"C:\GENESIS\GENSERVICES\START-BRANCH-SERVER-%GENGRP%.bat"
+schtasks /create /sc DAILY /st 06:00:00 /RI 1 /DU 24:00 /tn "genesisBRSVR-%GENGRP%" /RU "%SVRNAME%" /RP "%SVRPASS%" /tr "C:\GENESIS\GENSERVICES\START-BRANCH-SERVER-%GENGRP%.bat"
+cls
+@echo ***** DONE *****
+@echo ***** CREATING CHECK SERVICES STATUS *****
+(
+	ECHO @echo off
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE1=gen*
+	ECHO :top
+	ECHO cls
+	ECHO TASKLIST /FI "IMAGENAME eq %%exe1%%"
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO timeout 60
+	ECHO goto top
+)>"C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat"
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%HOMEDRIVE%%HOMEPATH%\Desktop\CHECK SERVICES STATUS.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat" >> CreateShortcut.vbs
+echo olink.workingdirectory = "C:\GENESIS\GENSERVICES\" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\INSTALL\LOGO.ico" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+ping 127.0.0.1 -n 3 > nul
+goto TOPGENGRPSVR
+
+:HOOSRVGRP
+@echo ***** CREATING HEAD OFFICE SERVER SERVICE (OFFLINE TILL) *****
+copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genHQServer.exe" "C:\GENESIS\GENSERVICES\genHQServer%GENGRP%.exe" /y
+(
+	ECHO echo off
+	ECHO cls
+	ECHO ======================
+	ECHO set GENGRPNAME=%GENGRPNAME%
+	ECHO set GENGRP=%GENGRP%
+	ECHO ======================
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE=genHQServer%%GENGRP%%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXE%%"'^) DO IF %%%%x == %%EXE%% goto FOUND
+	ECHO echo SERVICE IS NOT RUNNING
+	ECHO echo ***** STARTING HEAD OFFICE SERVER SERVICE *****
+	ECHO echo %%GENGRP%%
+	ECHO copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genHQServer.exe" "C:\GENESIS\GENSERVICES\genHQServer%%GENGRP%%.exe" /y
+	ECHO start "" "C:\GENESIS\GENSERVICES\%%EXE%%" %%GENGRP%% AUTO
+	ECHO goto EXIT
+	ECHO :FOUND
+	ECHO echo SERVICE IS RUNNING
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+)>"C:\GENESIS\GENSERVICES\START-HEADOFFICE-SERVER-%GENGRP%.bat"
+schtasks /create /sc DAILY /st 06:00:00 /RI 1 /DU 24:00 /tn "genesisHQserver-%GENGRP%" /RU "%SVRNAME%" /RP "%SVRPASS%" /tr "C:\GENESIS\GENSERVICES\START-HEADOFFICE-SERVER-%GENGRP%.bat"
+cls
+@echo ***** DONE *****
+@echo ***** CREATING CHECK SERVICES STATUS *****
+(
+	ECHO @echo off
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE1=gen*
+	ECHO :top
+	ECHO cls
+	ECHO TASKLIST /FI "IMAGENAME eq %%exe1%%"
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO timeout 60
+	ECHO goto top
+)>"C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat"
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%HOMEDRIVE%%HOMEPATH%\Desktop\CHECK SERVICES STATUS.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat" >> CreateShortcut.vbs
+echo olink.workingdirectory = "C:\GENESIS\GENSERVICES\" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\INSTALL\LOGO.ico" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+ping 127.0.0.1 -n 3 > nul
+goto TOPGENGRPSVR
+
+:EODSRVGRP
+@echo ***** CREATING END OF DAY-MONTH SERVICE *****
+ping 127.0.0.1 -n 3 > nul
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\genEOD%GENGRP%.exe" "C:\GENESIS\GENSERVICES" /D /y
+(
+	ECHO echo off
+	ECHO SETLOCAL EnableExtensions
+	ECHO cls
+	ECHO echo ***** KILL EOD-EOM TASK *****
+	ECHO set EOD1=genEOD%GENGRP%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EOD1%%"'^) DO IF %%%%x == %%EOD1%% goto EODop1
+	ECHO echo %%EOD1%% SERVICE IS NOT RUNNING
+	ECHO goto STEOD
+	ECHO :EODop1
+	ECHO taskkill /IM %%EOD1%% /f
+	ECHO :STEOD
+	ECHO echo off
+	ECHO cls
+	ECHO If "%%1"=="" goto gdate
+	ECHO set date="%%1"
+	ECHO goto start
+	ECHO :gdate
+	ECHO set /p date=Give Date:
+	ECHO :start
+	ECHO ======================
+	ECHO set GENGRPNAME=%GENGRPNAME%
+	ECHO set GENGRP=%GENGRP%
+	ECHO set RUNDATE=%%date%%
+	ECHO ======================
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE=genEOD%%GENGRP%%.exe
+	ECHO FOR /F %%^%%x IN ^('tasklist /NH /FI "IMAGENAME eq %%EXE%%"'^) DO IF %%%%x == %%EXE%% goto FOUND
+	ECHO echo SERVICE IS NOT RUNNING
+	ECHO echo ***** STARTING EOD-EOM SERVICE *****
+	ECHO echo %%GENGRP%%
+	ECHO copy "\\%SERVER IP%\%NETSHARE%\GENESIS\GENSERVICES\genEOD.exe" "C:\GENESIS\GENSERVICES\genEOD%%GENGRP%%.exe" /y
+	ECHO start "" "C:\GENESIS\GENSERVICES\%%EXE%%" CAT %%GENGRP%% %%RUNDATE%%
+	ECHO goto EXIT
+	ECHO :FOUND
+	ECHO echo SERVICE IS RUNNING
+	ECHO ping 127.0.0.1 -n 3 ^> nul
+	ECHO exit
+)>"C:\GENESIS\GENSERVICES\START-EOD-EOM-SERVICE-%GENGRP%.bat"
+schtasks /create /sc DAILY /st 21:00:00 /tn "genesisEOD-EOM-%GENGRP%" /RU "%SVRNAME%" /RP "%SVRPASS%" /tr "C:\GENESIS\GENSERVICES\START-EOD-EOM-SERVICE-%GENGRP%.bat %%DATE%%"
+cls
+@echo ***** DONE *****
+@echo ***** CREATING CHECK SERVICES STATUS *****
+(
+	ECHO @echo off
+	ECHO SETLOCAL EnableExtensions
+	ECHO set EXE1=gen*
+	ECHO :top
+	ECHO cls
+	ECHO TASKLIST /FI "IMAGENAME eq %%exe1%%"
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO @ECHO .
+	ECHO timeout 60
+	ECHO goto top
+)>"C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat"
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%HOMEDRIVE%%HOMEPATH%\Desktop\CHECK SERVICES STATUS.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "C:\GENESIS\GENSERVICES\CHECK-SERVICES-STATUS.bat" >> CreateShortcut.vbs
+echo olink.workingdirectory = "C:\GENESIS\GENSERVICES\" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\INSTALL\LOGO.ico" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+ping 127.0.0.1 -n 3 > nul
+goto TOPGENGRPSVR
+
+=============================================================================================================
+:SECDOOR
+cls
+@echo *****NOW SETTING UP SECURITY DOOR PC*****
+ping 127.0.0.1 -n 3 > nul
+if exist "c:\GENESIS\genMENU.exe" goto fgd1
+goto next1
+:fgd1
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%allusersprofile%\Desktop\SECURITY EXIT.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "C:\GENESIS\genSEC.exe" >> CreateShortcut.vbs
+echo olink.workingdirectory = "C:\GENESIS\genSEC.exe" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\genSEC.exe" >> CreateShortcut.vbs
+echo olink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%allusersprofile%\Start Menu\Programs\StartUp\SECURITY EXIT DOOR.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "C:\GENESIS\genSEC.exe" >> CreateShortcut.vbs
+echo olink.workingdirectory = "C:\GENESIS\genSEC.exe" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\genSEC.exe" >> CreateShortcut.vbs
+echo olink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+::xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES\SECURITY EXIT.lnk" "%allusersprofile%\Start Menu\Programs\StartUp" /D /y
+::xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES\SECURITY EXIT.lnk" "%allusersprofile%\Desktop" /D /y
+goto MENU
+:next1
+if exist "%userprofile%\AppData\Local\GENESIS\genMENU.exe" goto fgd2
+goto nff
+:fgd2
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%userprofile%\Desktop\SECURITY EXIT DOOR.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "%userprofile%\AppData\Local\GENESIS\genSEC.exe" >> CreateShortcut.vbs
+echo olink.workingdirectory = "%userprofile%\AppData\Local\GENESIS\genSEC.exe" >> CreateShortcut.vbs
+echo olink.IconLocation ="%userprofile%\AppData\Local\GENESIS\genSEC.exe" >> CreateShortcut.vbs
+echo olink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%userprofile%\Start Menu\Programs\StartUp\SECURITY EXIT DOOR.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "%userprofile%\AppData\Local\GENESIS\genSEC.exe" >> CreateShortcut.vbs
+echo olink.workingdirectory = "%userprofile%\AppData\Local\GENESIS\genSEC.exe" >> CreateShortcut.vbs
+echo olink.IconLocation ="%userprofile%\AppData\Local\GENESIS\genSEC.exe" >> CreateShortcut.vbs
+echo olink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+::xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES\SECURITY EXIT DOOR.lnk" "%userprofile%\Start Menu\Programs\StartUp" /D /y
+::xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES\SECURITY EXIT DOOR.lnk" "%userprofile%\Desktop" /D /y
+goto menu
+:nff
+cls
+color 0C
+ECHO ***** NO FILES FOUND TO COPY *****
+ping 127.0.0.1 -n 4 > nul
+goto MENU
+=============================================================================================================
+:CREATEBACKUP
+cls
+@ECHO *****DO YOU WHANT TO CREATE A BACKUP TASK*****
+set /P INPUT=TYPE INPUT: %=%
+If %INPUT%==y goto yes9
+If %INPUT%==Y goto yes9
+If %INPUT%== %INPUT% goto MENU
+:yes9
+cls
+@ECHO *****SETUP BACKUP DETAILS*****
+cls
+@echo (Please keep in mind Common database will backup automatically)
+set /P NODBs=HOW MANY DATABASES WILL YOU BACKUP(MAX NUMBER 4)?:
+if %NODBs%==1 goto 1DB
+if %NODBs%==2 goto 2DB
+if %NODBs%==3 goto 3DB
+if %NODBs%==4 goto 4DB
+if %NODBs%==%NODBs% goto CREATEBACKUP
+:1DB
+set /p SERVERDB1=TYPE DataBase NAME:
+goto next1
+:2DB
+set /p SERVERDB1=TYPE 1st DataBase NAME:
+set /p SERVERDB2=TYPE 2nd DataBase NAME:
+goto next1
+:3DB
+set /p SERVERDB1=TYPE 1st DataBase NAME:
+set /p SERVERDB2=TYPE 2nd DataBase NAME:
+set /p SERVERDB3=TYPE 3rd DataBase NAME:
+goto next1
+:4DB
+set /p SERVERDB1=TYPE 1st DataBase NAME:
+set /p SERVERDB2=TYPE 2nd DataBase NAME:
+set /p SERVERDB3=TYPE 3rd DataBase NAME:
+set /p SERVERDB4=TYPE 4th DataBase NAME:
+:next1
+set /p NOD=FOR HOW MANY DAYS DO YOU NEED BACKUPS? SELECT FROM 1 TO 6:
+set /p username=TYPE SERVER USERNAME:
+set /p password=TYPE SERVER PASSWORD:
+set /p BACKUPDIR1=TYPE BACKUP LOCATION eg.(c:\backup):
+@ECHO =================================================
+@ECHO *****SETUP EMAIL DETAILS*****
+set /p smtpsvr=OUTGONING SMTP SERVER: 
+set /p smtpp=OUTGONING SMTP PORT: 
+set /p fromemail=EMAIL ADDRESS SENDING FROM: 
+set /p mailuser=EMAIL USERNAME: 
+set /p mailpass=EMAIL USER PASSWORD: 
+set /p sendto=SEND TO EMAIL ADDRESSES(name@domain.com;name2@domain2.com): 
+set /p subject=PLEASE PROVIDE COMPANY NAME: 
+
+cls
+Echo ==================================================
+ECHO BACKUP WILL BE CREATED WITH THE FOLLOWING DETAILS.
+Echo ==================================================
+ECHO DATABASE THAT WILL BACKUP
+ECHO -------------
+ECHO %serverdb1%
+ECHO %serverdb2%
+ECHO %serverdb3%
+ECHO %serverdb4%
+ECHO -------------
+ECHO NUMBER OF DAYS TO KEEP BACKUP
+ECHO (%NOD%)
+ECHO -------------
+ECHO SERVER USERNAME
+ECHO (%username%)
+ECHO AND THE PASSWORD
+ECHO (%password%)
+ECHO -------------
+ECHO EMAIL NOTIFICATIONS SETTINS
+ECHO SMTP SERVER (%smtpsvr%) SMTP PORT (%smtpp%) SMTP MAIL ADDRESS (%fromemail%)
+ECHO EMAIL ACCOUNT USERNAME (%mailuser%) AND PASSWORD (%mailpass%)
+ECHO EMAIL ADDRESS TO SEND NOTIFICATIONS TO (%sendto%)
+ECHO -------------
+ECHO AND THE BACKUP WILL BE SAVED AT THIS LOCATION (%BACKUPDIR1%\RUNGENBACKUP)
+set /P INPUT=IS THIS DETAILS CORRECT (Y/N): %=%
+If %INPUT%==y goto yes8
+If %INPUT%==Y goto yes8
+If %INPUT% == %INPUT% goto CREATEBACKUP
+:yes8
+md "C:\SQLBACKUPS\INSTALL"
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES\email64bit.exe" "C:\SQLBACKUPS\INSTALL" /D /Y
+xcopy /h "\\%SERVER IP%\%NETSHARE%\GENESIS\GENESIS INSTALL FILES\WINRAR.exe" "C:\GENESIS\INSTALL" /D /Y
+if exist "C:\Program Files (x86)\WinRAR\rar.exe" goto rarreddy
+CLS
+ECHO ********************************
+ECHO * WINRAR 32bit IS NOT INSTALLED*
+ECHO ********************************
+ECHO *****Installing WINRAR 32bit*****
+"C:\GENESIS\INSTALL\WINRAR.exe" /passive
+:rarreddy
+ECHO *****CREATING BACKUP FILES*****
+if exist "%BACKUPDIR1%\GEN BACKUP FILES" goto nexthop1
+md "%BACKUPDIR1%\GEN BACKUP FILES"
+:nexthop1
+if exist "C:\SQLBACKUPS\INSTALL" goto nexthop2
+md "C:\SQLBACKUPS\INSTALL"
+:nexthop2
+CLS
+@echo CREATING BACKUP FILE
+ECHO setlocal enabledelayedexpansion>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO @echo off>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO CLS>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO echo !date! !time!>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO echo _________________________>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO echo   HOURLY BACKUP RUNNING>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO echo _________________________>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+if %NODBs%==1 goto 1DB1
+if %NODBs% GEQ 2 goto 2DB1
+:1DB1
+ECHO if exist "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB1%.bak" goto COM1>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+goto done
+:2DB1
+ECHO if exist "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB1%.bak" goto DB2>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+:done
+ECHO echo FULL>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO ^>%BACKUPDIR1%\BACKUPlog.txt (>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO echo _________________________>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO echo  FULL BACKUP STARTED AT>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO echo  !date!>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO echo  !time!>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO echo _________________________>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+if %NODBs%==1 goto 1DB2
+if %NODBs%==2 goto 2DB2
+if %NODBs%==3 goto 3DB2
+if %NODBs%==4 goto 4DB2
+:1DB2
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB1%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB1%.bak'">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+goto next2
+:2DB2
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB1%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB1%.bak'">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO :DB2>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO if exist "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB2%.bak" goto COM1>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB2%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB2%.bak'">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+goto next2
+:3DB2
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB1%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB1%.bak'">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO :DB2>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO if exist "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB2%.bak" goto DB3>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB2%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB2%.bak'">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO :DB3>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO if exist "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB3%.bak" goto COM1>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB3%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB3%.bak'">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+goto next2
+:4DB2
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB1%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB1%.bak'">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO :DB2>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO if exist "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB2%.bak" goto DB3>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB2%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB2%.bak'">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO :DB3>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO if exist "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB3%.bak" goto DB4>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB3%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB3%.bak'">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO :DB4>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO if exist "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB4%.bak" goto COM1>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB4%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB4%.bak'">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+:next2
+ECHO :COM1>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO if exist "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-GENESISCOMMON.bak" goto diff>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [GENESISCOMMON] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-GENESISCOMMON.bak'">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO forfiles -p "%BACKUPDIR1%\GEN BACKUP FILES" -s -m * -d -%NOD% -c "cmd /c del @FILE">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO echo ________________________>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO echo     BACKUP FINISHED AT>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO echo     !date!>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO echo     !time!>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO echo ________________________>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO timeout /t 10>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO ^)>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO exit>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO :diff>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO ^>%BACKUPDIR1%\BACKUPlog.txt (>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO echo ______________________________>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO echo DIFFERENTIAL BACKUP STARTED AT>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO echo !date!>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO echo !time!>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO echo ______________________________>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+if %NODBs%==1 goto 1DB3
+if %NODBs%==2 goto 2DB3
+if %NODBs%==3 goto 3DB3
+if %NODBs%==4 goto 4DB3
+:1DB3
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB1%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-%SERVERDB1%.bak'WITH DIFFERENTIAL">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+goto next3
+:2DB3
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB1%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-%SERVERDB1%.bak'WITH DIFFERENTIAL">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB2%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-%SERVERDB2%.bak'WITH DIFFERENTIAL">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+goto next3
+:3DB3
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB1%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-%SERVERDB1%.bak'WITH DIFFERENTIAL">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB2%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-%SERVERDB2%.bak'WITH DIFFERENTIAL">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB3%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-%SERVERDB3%.bak'WITH DIFFERENTIAL">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+goto next3
+:4DB3
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB1%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-%SERVERDB1%.bak'WITH DIFFERENTIAL">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB2%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-%SERVERDB2%.bak'WITH DIFFERENTIAL">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB3%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-%SERVERDB3%.bak'WITH DIFFERENTIAL">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB4%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-%SERVERDB4%.bak'WITH DIFFERENTIAL">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+:next3
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [GENESISCOMMON] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-GENESISCOMMON.bak'WITH DIFFERENTIAL">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO :done>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO forfiles -p "%BACKUPDIR1%\GEN BACKUP FILES" -s -m * -d -%NOD% -c "cmd /c del @FILE">>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+
+ECHO echo ________________________>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO echo     BACKUP FINISHED AT>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO echo     !date!>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO echo     !time!>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO echo ________________________>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO timeout /t 10>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO ^)>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+ECHO exit>>"%BACKUPDIR1%\RUNGENBACKUP.BAT"
+
+schtasks /create /sc DAILY /st 06:00:00 /RI 60 /DU 12:00 /tn "GENESISBackup" /RU "%username%" /RP "%password%" /tr "%BACKUPDIR1%\RUNGENBACKUP.BAT"
+
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%HOMEDRIVE%%HOMEPATH%\Desktop\GENESIS BACKUP.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "%BACKUPDIR1%\RUNGENBACKUP.BAT" >> CreateShortcut.vbs
+echo olink.workingdirectory = "%BACKUPDIR1%" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\INSTALL\LOGO.ico" >> CreateShortcut.vbs
+echo olink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+ECHO -------------------------------------------------------------------------------------------------------
+ECHO setlocal enabledelayedexpansion>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO @echo off>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO del "%BACKUPDIR1%\BACKUPDAILYlog.txt">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO cls>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+if %NODBs%==1 goto 1DB
+if %NODBs%==2 goto 2DB
+if %NODBs%==3 goto 3DB
+if %NODBs%==4 goto 4DB
+:1DB
+ECHO if exist "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB1%.bak" goto NEXT1>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo _________________________>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo   FULL BACKUP RUNNING>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo _________________________>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ^>%BACKUPDIR1%\BACKUPDAILYlog.txt (>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo _________________________>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo   FULL BACKUP STARTED AT>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo   !date!>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo   !time!>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo _________________________>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB1%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB1%.bak'">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO :NEXT1>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO if exist "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-GENESISCOMMON.bak" goto done>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [GENESISCOMMON] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-GENESISCOMMON.bak'">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ^)>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+goto next1
+:2DB
+ECHO if exist "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB1%.bak" goto NEXT1>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo _________________________>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo   FULL BACKUP RUNNING>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo _________________________>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ^>%BACKUPDIR1%\BACKUPDAILYlog.txt (>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo _________________________>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo   FULL BACKUP STARTED AT>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo   !date!>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo   !time!>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo _________________________>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB1%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB1%.bak'">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO :NEXT1>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO if exist "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB2%.bak" goto NEXT2>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB2%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB2%.bak'">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO :NEXT2>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO if exist "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-GENESISCOMMON.bak" goto done>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [GENESISCOMMON] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-GENESISCOMMON.bak'">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ^)>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+goto next1
+:3DB
+ECHO if exist "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB1%.bak" goto NEXT1>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo _________________________>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo   FULL BACKUP RUNNING>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo _________________________>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ^>%BACKUPDIR1%\BACKUPDAILYlog.txt (>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo _________________________>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo   FULL BACKUP STARTED AT>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo   !date!>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo   !time!>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo _________________________>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB1%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB1%.bak'">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO :NEXT1>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO if exist "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB2%.bak" goto NEXT2>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB2%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB2%.bak'">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO :NEXT2>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO if exist "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB3%.bak" goto NEXT3>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB3%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB3%.bak'">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO :NEXT3>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO if exist "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-GENESISCOMMON.bak" goto done>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [GENESISCOMMON] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-GENESISCOMMON.bak'">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ^)>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+goto next1
+:4DB
+ECHO if exist "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB1%.bak" goto NEXT1>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo _________________________>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo   FULL BACKUP RUNNING>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo _________________________>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ^>%BACKUPDIR1%\BACKUPDAILYlog.txt (>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo _________________________>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo   FULL BACKUP STARTED AT>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo   !date!>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo   !time!>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo _________________________>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB1%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB1%.bak'">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO :NEXT1>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO if exist "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB2%.bak" goto NEXT2>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB2%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB2%.bak'">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO :NEXT2>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO if exist "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB3%.bak" goto NEXT3>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB3%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB3%.bak'">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO :NEXT3>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO if exist "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB4%.bak" goto NEXT4>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [%SERVERDB4%] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB4%.bak'">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO :NEXT4>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO if exist "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-GENESISCOMMON.bak" goto done>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO SqlCmd -E -S %server ip% -Q "BACKUP DATABASE [GENESISCOMMON] TO DISK= '%BACKUPDIR1%\GEN BACKUP FILES\TODAY-GENESISCOMMON.bak'">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ^)>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+:next1
+ECHO :done>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO cls>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo ________________________>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo   DAYLY BACKUP RUNNING>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo   !date!>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo   !time!>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo ________________________>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ^>^>%BACKUPDIR1%\BACKUPDAILYlog.txt (>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo ________________________>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo   DAYLY BACKUP RUNNING>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo   !date!>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo   !time!>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo ________________________>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO set path="C:\Program Files (x86)\WinRAR\">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO del /s "%BACKUPDIR1%\GEN BACKUP FILES\6DAYOLD-*.*">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+if %NODBs%==1 goto 1DB
+if %NODBs%==2 goto 2DB
+if %NODBs%==3 goto 3DB
+if %NODBs%==4 goto 4DB
+:1DB
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\5DAYOLD-%SERVERDB1%.rar" "6DAYOLD-%SERVERDB1%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\5DAYOLD-GENESISCOMMON.rar" "6DAYOLD-GENESISCOMMON.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\4DAYOLD-%SERVERDB1%.rar" "5DAYOLD-%SERVERDB1%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\4DAYOLD-GENESISCOMMON.rar" "5DAYOLD-GENESISCOMMON.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\3DAYOLD-%SERVERDB1%.rar" "4DAYOLD-%SERVERDB1%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\3DAYOLD-GENESISCOMMON.rar" "4DAYOLD-GENESISCOMMON.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\2DAYOLD-%SERVERDB1%.rar" "3DAYOLD-%SERVERDB1%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\2DAYOLD-GENESISCOMMON.rar" "3DAYOLD-GENESISCOMMON.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB1%.rar" "2DAYOLD-%SERVERDB1%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-GENESISCOMMON.rar" "2DAYOLD-GENESISCOMMON.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB1%.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB1%.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-GENESISCOMMON.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-GENESISCOMMON.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB1%.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-%SERVERDB1%.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-GENESISCOMMON.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-GENESISCOMMON.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+
+ECHO del "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-*.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+goto done
+:2DB
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\5DAYOLD-%SERVERDB1%.rar" "6DAYOLD-%SERVERDB1%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\5DAYOLD-%SERVERDB2%.rar" "6DAYOLD-%SERVERDB2%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\5DAYOLD-GENESISCOMMON.rar" "6DAYOLD-GENESISCOMMON.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\4DAYOLD-%SERVERDB1%.rar" "5DAYOLD-%SERVERDB1%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\4DAYOLD-%SERVERDB2%.rar" "5DAYOLD-%SERVERDB2%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\4DAYOLD-GENESISCOMMON.rar" "5DAYOLD-GENESISCOMMON.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\3DAYOLD-%SERVERDB1%.rar" "4DAYOLD-%SERVERDB1%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\3DAYOLD-%SERVERDB2%.rar" "4DAYOLD-%SERVERDB2%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\3DAYOLD-GENESISCOMMON.rar" "4DAYOLD-GENESISCOMMON.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\2DAYOLD-%SERVERDB1%.rar" "3DAYOLD-%SERVERDB1%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\2DAYOLD-%SERVERDB2%.rar" "3DAYOLD-%SERVERDB2%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\2DAYOLD-GENESISCOMMON.rar" "3DAYOLD-GENESISCOMMON.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB1%.rar" "2DAYOLD-%SERVERDB1%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB2%.rar" "2DAYOLD-%SERVERDB2%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-GENESISCOMMON.rar" "2DAYOLD-GENESISCOMMON.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB1%.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB1%.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB2%.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB2%.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-GENESISCOMMON.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-GENESISCOMMON.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB1%.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-%SERVERDB1%.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB2%.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-%SERVERDB2%.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-GENESISCOMMON.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-GENESISCOMMON.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO del "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-*.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+goto done
+:3DB
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\5DAYOLD-%SERVERDB1%.rar" "6DAYOLD-%SERVERDB1%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\5DAYOLD-%SERVERDB2%.rar" "6DAYOLD-%SERVERDB2%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\5DAYOLD-%SERVERDB3%.rar" "6DAYOLD-%SERVERDB3%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\5DAYOLD-GENESISCOMMON.rar" "6DAYOLD-GENESISCOMMON.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\4DAYOLD-%SERVERDB1%.rar" "5DAYOLD-%SERVERDB1%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\4DAYOLD-%SERVERDB2%.rar" "5DAYOLD-%SERVERDB2%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\4DAYOLD-%SERVERDB3%.rar" "5DAYOLD-%SERVERDB3%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\4DAYOLD-GENESISCOMMON.rar" "5DAYOLD-GENESISCOMMON.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\3DAYOLD-%SERVERDB1%.rar" "4DAYOLD-%SERVERDB1%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\3DAYOLD-%SERVERDB2%.rar" "4DAYOLD-%SERVERDB2%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\3DAYOLD-%SERVERDB3%.rar" "4DAYOLD-%SERVERDB3%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\3DAYOLD-GENESISCOMMON.rar" "4DAYOLD-GENESISCOMMON.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\2DAYOLD-%SERVERDB1%.rar" "3DAYOLD-%SERVERDB1%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\2DAYOLD-%SERVERDB2%.rar" "3DAYOLD-%SERVERDB2%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\2DAYOLD-%SERVERDB3%.rar" "3DAYOLD-%SERVERDB3%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\2DAYOLD-GENESISCOMMON.rar" "3DAYOLD-GENESISCOMMON.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB1%.rar" "2DAYOLD-%SERVERDB1%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB2%.rar" "2DAYOLD-%SERVERDB2%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB3%.rar" "2DAYOLD-%SERVERDB3%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-GENESISCOMMON.rar" "2DAYOLD-GENESISCOMMON.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB1%.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB1%.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB2%.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB2%.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB3%.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB3%.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-GENESISCOMMON.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-GENESISCOMMON.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB1%.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-%SERVERDB1%.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB2%.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-%SERVERDB2%.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB3%.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-%SERVERDB3%.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-GENESISCOMMON.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-GENESISCOMMON.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO del "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-*.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+goto done
+:4DB
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\5DAYOLD-%SERVERDB1%.rar" "6DAYOLD-%SERVERDB1%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\5DAYOLD-%SERVERDB2%.rar" "6DAYOLD-%SERVERDB2%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\5DAYOLD-%SERVERDB3%.rar" "6DAYOLD-%SERVERDB3%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\5DAYOLD-%SERVERDB4%.rar" "6DAYOLD-%SERVERDB4%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\5DAYOLD-GENESISCOMMON.rar" "6DAYOLD-GENESISCOMMON.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\4DAYOLD-%SERVERDB1%.rar" "5DAYOLD-%SERVERDB1%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\4DAYOLD-%SERVERDB2%.rar" "5DAYOLD-%SERVERDB2%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\4DAYOLD-%SERVERDB3%.rar" "5DAYOLD-%SERVERDB3%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\4DAYOLD-%SERVERDB4%.rar" "5DAYOLD-%SERVERDB4%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\4DAYOLD-GENESISCOMMON.rar" "5DAYOLD-GENESISCOMMON.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\3DAYOLD-%SERVERDB1%.rar" "4DAYOLD-%SERVERDB1%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\3DAYOLD-%SERVERDB2%.rar" "4DAYOLD-%SERVERDB2%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\3DAYOLD-%SERVERDB3%.rar" "4DAYOLD-%SERVERDB3%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\3DAYOLD-%SERVERDB4%.rar" "4DAYOLD-%SERVERDB4%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\3DAYOLD-GENESISCOMMON.rar" "4DAYOLD-GENESISCOMMON.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\2DAYOLD-%SERVERDB1%.rar" "3DAYOLD-%SERVERDB1%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\2DAYOLD-%SERVERDB2%.rar" "3DAYOLD-%SERVERDB2%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\2DAYOLD-%SERVERDB3%.rar" "3DAYOLD-%SERVERDB3%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\2DAYOLD-%SERVERDB4%.rar" "3DAYOLD-%SERVERDB4%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\2DAYOLD-GENESISCOMMON.rar" "3DAYOLD-GENESISCOMMON.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB1%.rar" "2DAYOLD-%SERVERDB1%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB2%.rar" "2DAYOLD-%SERVERDB2%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB3%.rar" "2DAYOLD-%SERVERDB3%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB4%.rar" "2DAYOLD-%SERVERDB4%.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ren "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-GENESISCOMMON.rar" "2DAYOLD-GENESISCOMMON.rar">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB1%.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB1%.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB2%.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB2%.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB3%.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB3%.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB4%.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-%SERVERDB4%.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-GENESISCOMMON.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-GENESISCOMMON.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB1%.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-%SERVERDB1%.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB2%.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-%SERVERDB2%.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB3%.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-%SERVERDB3%.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-%SERVERDB4%.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-%SERVERDB4%.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO rar a "%BACKUPDIR1%\GEN BACKUP FILES\1DAYOLD-GENESISCOMMON.rar" "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-DIFF-GENESISCOMMON.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO del "%BACKUPDIR1%\GEN BACKUP FILES\TODAY-*.bak">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+goto done
+:done
+ECHO cls>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo ________________________>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo        BACKUP DONE>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo !date!>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo !time!>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo ________________________>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ^)>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO set path="c:\windows\system32\">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO timeout /t 10>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ::****************************>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ::**SETUP MAIL DETAILS HERE***>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ::****************************>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT" 
+ECHO ^> "C:\SQLBACKUPS\INSTALL\email.txt" (>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ::SMTP MAIL SERVER>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo %smtpsvr%>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+
+ECHO ::SMTP PORT>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo %smtpp%>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+
+ECHO ::USERNAME>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo %mailuser%>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+
+ECHO ::PASSWORD>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo %mailpass%>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+
+ECHO ::FROM MAIL ADDRESS>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo %fromemail%>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+
+ECHO ::TO MAIL ADDRESS>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo %sendto%>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+
+ECHO ::SUBJECT>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo %subject% SQLBACKUPS FOR %server ip%>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+
+ECHO ::TEXT INSIDE THE MAIL BODY>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo BACKUP IS DONE AND LOG FILE IS ATT. BACKUP LOCATION IS %BACKUPDIR1%\GEN BACKUP FILES>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO echo %BACKUPDIR1%\BACKUPDAILYlog.txt>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO ^)>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO C:\SQLBackups\INSTALL\email64bit.exe>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO C:\SQLBackups\INSTALL\email.exe>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+ECHO timeout /t 10>>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+echo del "C:\SQLBACKUPS\INSTALL\email.txt">>"%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+@ECHO CREATING SCHEDULED TASK NOW
+
+schtasks /create /sc DAILY /st 01:00:00 /tn "GENESISBackupdaily" /RU "%username%" /RP "%password%" /tr "%BACKUPDIR1%\GENBACKUPDAILY.BAT"
+cls
+@ECHO *****************************************
+ping 127.0.0.1 -n 2 > nul
+@ECHO DATABASE BACKUP FILES IS NOW CREATED
+ping 127.0.0.1 -n 2 > nul
+@ECHO TO BACKUP GENESIS RUN THIS FILE (%BACKUPDIR1%\RUNGENBACKUP.BAT) 
+ping 127.0.0.1 -n 2 > nul
+@ECHO YOU MAY RUN THIS FILE AT ANY TIME OF THE DAY TO BACKUP YOUR GENESIS DATABASE.
+ping 127.0.0.1 -n 2 > nul
+@ECHO LOCATION OF THE BACKUP FILES IS %BACKUPDIR1%\%SERVERDB1%.bak and %BACKUPDIR1%\GENESISCOMMON.bak
+
+pause
+goto MENU
+=============================================================================================================
+:GENUPDATE
+cls
+ECHO =========================================
+ECHO PLEASE PROVIDE SERVER DETAIL THATS NEEDED
+ECHO =========================================
+set /p GENCOMP=GENESIS COMPANY CODE:
+set /p GENBR=GENESIS BRANCH CODE:
+
+echo ***** Creating The GENESIS update Program *****
+ping 127.0.0.1 -n 3 > nul
+
+if exist "C:\Program Files (x86)\WinRAR\rar.exe" goto rarreddy2
+CLS
+ECHO *********************************
+ECHO * WINRAR 32bit IS NOT INSTALLED *
+ECHO *********************************
+ECHO *****Installing WINRAR 32bit*****
+xcopy /h "%NETDRIVE%:\GENESIS\GENESIS INSTALL FILES\WINRAR.exe" "C:\GENESIS\INSTALL" /D /Y
+"C:\GENESIS\INSTALL\WINRAR.exe" /passive
+:rarreddy2
+md "%NETDRIVE%:\GENESIS\TEMP EXE\"
+md "%NETDRIVE%:\GENESIS\OLD EXE\"
+md "%NETDRIVE%:\GENESIS\GENSERVICES\"
+Xcopy /h "%NETDRIVE%:\GENESIS\GENESIS INSTALL FILES\LOGO.ico" "C:\GENESIS\INSTALL" /D /Y
+
+(
+	ECHO @echo off
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\" goto NDF1
+	ECHO *********************************
+	ECHO * %NETDRIVE% DRIVE IS NOT MAPED *
+	ECHO * PLEASE RUN THE RunLogon FILE  *
+	ECHO *   ON THE DESCTOP OR REBOOT    *
+	ECHO *********************************
+	ECHO :NDF1
+	ECHO SETLOCAL EnableExtensions
+	ECHO If "%%1"=="" goto EXE
+	ECHO cls
+	ECHO md "%NETDRIVE%:\GENESIS\TEMP EXE\"
+	ECHO md "%NETDRIVE%:\GENESIS\OLD EXE\"
+	ECHO md "%NETDRIVE%:\GENESIS\GENSERVICES\"
+	ECHO md "%NETDRIVE%:\GENESIS\DB UPGRADES\"
+	ECHO Xcopy /h "%NETDRIVE%:\GENESIS\GENESIS INSTALL FILES\LOGO.ico" "C:\GENESIS\INSTALL" /D /Y
+	ECHO cls
+	ECHO echo _____________________________________________________________________________________________^> "%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO @echo _______STARTING UPDATE %%date%%  %%time%%_______
+	ECHO @echo STARTING UPDATE %%date%%  %%time%% ^>^> "%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO @echo.
+	ECHO @ECHO ***** DOWNLOADING GENESIS VERSION FILES *****
+	ECHO @ECHO *************** PLEASE WAIT *****************
+	ECHO ^> script.ftp ECHO GENESISV
+	ECHO ^>^>script.ftp ECHO D0gm@t1x
+	ECHO ^>^>script.ftp ECHO binary
+	ECHO ^>^>script.ftp ECHO prompt n
+	ECHO ^>^>script.ftp ECHO mget %%1.rar
+	ECHO ^>^>script.ftp ECHO bye
+	ECHO cd %%currentuser%% ^>^>nul
+	ECHO FTP -v -s:script.ftp lsfcloud01.mrj.co.za ^>^> "%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO TYPE NUL ^>script.ftp
+	ECHO DEL script.ftp
+	
+	ECHO set path="C:\Program Files (x86)\WinRAR\"
+	ECHO unrar.exe x "%NETDRIVE%:\GENESIS\TEMP EXE\%%1.rar" *.* "%NETDRIVE%:\GENESIS\TEMP EXE\" /Y
+	ECHO rar a "%NETDRIVE%:\GENESIS\OLD EXE\old exe.rar" "%NETDRIVE%:\GENESIS\*.exe"
+	
+	ECHO set path="C:\WINDOWS\SYSTEM32\"
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\genDBCommon.exe" goto udgen2
+	ECHO goto next5
+	ECHO :udgen2
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\genDBCommon.exe" "%NETDRIVE%:\GENESIS\DB UPGRADES"
+	ECHO "%NETDRIVE%:\GENESIS\DB UPGRADES\genDBCommon.exe" AUTO
+	ECHO :next5
+	 
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\genDBGenesis.exe" goto udcom2
+	ECHO goto next6
+	ECHO :udcom2
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\genDBGenesis.exe" "%NETDRIVE%:\GENESIS\DB UPGRADES"
+	ECHO "%NETDRIVE%:\GENESIS\DB UPGRADES\genDBGenesis.exe" AUTO
+	ECHO :next6
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\Genesis-Install.bat" goto udins2
+	ECHO goto next7
+	ECHO :udins2
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\Genesis-Install.bat" "%NETDRIVE%:\GENESIS\GENESIS INSTALL FILES"
+	ECHO :next7
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\genEOD.exe" goto udeod1
+	ECHO goto eodnf1
+	ECHO :udeod1
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\TEMP EXE\genEOD.exe" "%NETDRIVE%:\GENESIS\GENSERVICES" /D /Y ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO :eodnf1
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\genBRServer.exe" goto udbrs1
+	ECHO goto brsnf1
+	ECHO :udbrs1
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\genBRServer.exe" "%NETDRIVE%:\GENESIS\GENSERVICES" ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO :brsnf1
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\genHQServer.exe" goto udHQs1
+	ECHO goto HQsnf1
+	ECHO :udHQs1
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\genHQServer.exe" "%NETDRIVE%:\GENESIS\GENSERVICES" ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO :HQsnf1
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\genDownloadSvr.exe" goto udWDs1
+	ECHO goto WDsnf1
+	ECHO :udWDs1
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\genDownloadSvr.exe" "%NETDRIVE%:\GENESIS\GENSERVICES" ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO :WDsnf1
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\genUploadSvr.exe" goto udWUs1
+	ECHO goto WUsnf1
+	ECHO :udWUs1
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\genUploadSvr.exe" "%NETDRIVE%:\GENESIS\GENSERVICES" ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO :WUsnf1
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\genICStoreSvr.exe" goto udICSs1
+	ECHO goto ICSsnf1
+	ECHO :udICSs1
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\genICStoreSvr.exe" "%NETDRIVE%:\GENESIS\GENSERVICES" ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO :ICSsnf1
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\genICHQSvr.exe" goto udICHs1
+	ECHO goto ICHsnf1
+	ECHO :udICHs1
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\genICHQSvr.exe" "%NETDRIVE%:\GENESIS\GENSERVICES" ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO :ICHsnf1
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\genBranchSvr.exe" goto udbras1
+	ECHO goto brasnf1
+	ECHO :udbras1
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\genBranchSvr.exe" "%NETDRIVE%:\GENESIS\GENSERVICES" ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO :brasnf1
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\GenHOSvr.exe" goto udHOs1
+	ECHO goto HOsnf1
+	ECHO :udHOs1
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\GenHOSvr.exe" "%NETDRIVE%:\GENESIS\GENSERVICES" ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO :HOsnf1
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\LOGO.ico" goto udLOGO
+	ECHO goto LOGONF
+	ECHO :udLOGO
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\LOGO.ico" "%NETDRIVE%:\GENESIS\GENESIS INSTALL FILES" ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO :LOGONF
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\genSvrReg.exe" goto udSVR
+	ECHO goto SVRNF
+	ECHO :udSVR
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\genSvrReg.exe" "%NETDRIVE%:\GENESIS\GENESIS INSTALL FILES" ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO :SVRNF
+		
+	ECHO cls
+	ECHO @echo ***** FILES THAT IS UPDATED ***** ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO set path="c:\windows\system32\"
+	ECHO @echo _______FILES THAT IS UPDATED_______
+	ECHO echo.
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\TEMP EXE\*.exe" "%NETDRIVE%:\GENESIS" /D /Y /C /R /L
+	ECHO @echo ____________________________________________________________________________________________^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO echo. ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\TEMP EXE\*.exe" "%NETDRIVE%:\GENESIS" /D /Y /C /R ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO @echo ===================
+	ECHO @echo == UPDATE IS DONE==
+	ECHO @echo =================== 
+	ECHO @echo _____________________________________________________________________________________________^>^> "%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO @echo DONE ^>^> "%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO echo.
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\SqlUpdate.bat" goto UPSQL
+	ECHO goto SQLUPNF
+	ECHO :UPSQL
+	ECHO @echo *****DO YOU WHANT TO RUN SQL UPDATE SCRIPTS Y/N*****
+	ECHO set /P INPUT=TYPE OPTION: %=%
+	ECHO if %%INPUT%%==Y goto YES
+	ECHO if %%INPUT%%==y goto YES
+	ECHO if %%INPUT%%==%%INPUT%% goto NO
+	ECHO :YES
+	ECHO "%NETDRIVE%:\GENESIS\TEMP EXE\SqlUpdate.bat"
+	ECHO ping 127.0.0.1 -n 5 ^> nul
+	ECHO del "%NETDRIVE%:\GENESIS\TEMP EXE\SqlUpdate.bat"
+	ECHO :SQLUPNF
+	ECHO :NO
+	ECHO Ping 127.0.0.1 -n 5 ^>^>nul
+	ECHO del "%NETDRIVE%:\GENESIS\TEMP EXE\*.exe" /Q ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO del "%NETDRIVE%:\GENESIS\TEMP EXE\*.rar" /Q ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO del "%NETDRIVE%:\GENESIS\TEMP EXE\*.tmp" /Q ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO del "%NETDRIVE%:\GENESIS\TEMP EXE\*.ico" /Q ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO del "%NETDRIVE%:\GENESIS\TEMP EXE\*.sql"
+	ECHO exit
+	
+	ECHO ::============================================================================================================================================
+	ECHO ::============================================================================================================================================
+	ECHO :EXE
+	ECHO echo off
+	ECHO cls
+	ECHO md "%NETDRIVE%:\GENESIS\TEMP EXE\"
+	ECHO md "%NETDRIVE%:\GENESIS\OLD EXE\"
+	ECHO md "%NETDRIVE%:\GENESIS\GENSERVICES\"
+	ECHO md "%NETDRIVE%:\GENESIS\DB UPGRADES\"
+	ECHO Xcopy /h "%NETDRIVE%:\GENESIS\GENESIS INSTALL FILES\LOGO.ico" "C:\GENESIS\INSTALL" /D /Y
+	ECHO if exist "C:\Program Files (x86)\WinRAR\rar.exe" goto ftp1
+	ECHO goto error1
+	ECHO :ftp1
+	ECHO cls
+	ECHO echo _____________________________________________________________________________________________^> "%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO @echo _______STARTING UPDATE %%date%%  %%time%%_______
+	ECHO @echo STARTING UPDATE %%date%%  %%time%% ^>^> "%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO @echo.
+	ECHO @ECHO ***** DOWNLOADING GENESIS EXE'S FILES *****
+	ECHO @ECHO ************** PLEASE WAIT ****************
+	ECHO ^> script.ftp ECHO GENESIS
+	ECHO ^>^>script.ftp ECHO D0gm@t1x
+	ECHO ^>^>script.ftp ECHO binary
+	ECHO ^>^>script.ftp ECHO prompt n
+	ECHO ^>^>script.ftp ECHO mget *.rar
+	ECHO ^>^>script.ftp ECHO bye
+	ECHO cd %%currentuser%% ^>^>nul
+	ECHO FTP -v -s:script.ftp lsfcloud01.mrj.co.za ^>^>nul
+	ECHO TYPE NUL ^>script.ftp
+	ECHO DEL script.ftp
+	
+	ECHO set path="C:\Program Files (x86)\WinRAR\"
+	ECHO unrar.exe x "%NETDRIVE%:\GENESIS\TEMP EXE\*.rar" *.* "%NETDRIVE%:\GENESIS\TEMP EXE\" /Y
+	ECHO rar a "%NETDRIVE%:\GENESIS\OLD EXE\old exe.rar" "%NETDRIVE%:\GENESIS\*.exe"
+	
+	ECHO set path="C:\WINDOWS\SYSTEM32\"
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\genDBCommon.exe" goto udgen2
+	ECHO goto next5
+	ECHO :udgen2
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\genDBCommon.exe" "%NETDRIVE%:\GENESIS\DB UPGRADES"
+	ECHO "%NETDRIVE%:\GENESIS\DB UPGRADES\genDBCommon.exe" AUTO
+	ECHO :next5
+	 
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\genDBGenesis.exe" goto udcom2
+	ECHO goto next6
+	ECHO :udcom2
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\genDBGenesis.exe" "%NETDRIVE%:\GENESIS\DB UPGRADES"
+	ECHO "%NETDRIVE%:\GENESIS\DB UPGRADES\genDBGenesis.exe" AUTO
+	ECHO :next6
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\Genesis-Install.bat" goto udins2
+	ECHO goto next7
+	ECHO :udins2
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\Genesis-Install.bat" "%NETDRIVE%:\GENESIS\GENESIS INSTALL FILES"
+	ECHO :next7
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\genEOD.exe" goto udeod2
+	ECHO goto eodnf2
+	ECHO :udeod2
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\TEMP EXE\genEOD.exe" "%NETDRIVE%:\GENESIS\GENSERVICES" /D /Y ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO :eodnf2
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\genBRServer.exe" goto udbrs2
+	ECHO goto brsnf2
+	ECHO :udbrs2
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\genBRServer.exe" "%NETDRIVE%:\GENESIS\GENSERVICES" ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO :brsnf2
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\genHQServer.exe" goto udHQs2
+	ECHO goto HQsnf2
+	ECHO :udHQs2
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\genHQServer.exe" "%NETDRIVE%:\GENESIS\GENSERVICES" ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO :HQsnf2
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\genDownloadSvr.exe" goto udWDs2
+	ECHO goto WDsnf2
+	ECHO :udWDs2
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\genDownloadSvr.exe" "%NETDRIVE%:\GENESIS\GENSERVICES" ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO :WDsnf2
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\genUploadSvr.exe" goto udWUs2
+	ECHO goto WUsnf2
+	ECHO :udWUs2
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\genUploadSvr.exe" "%NETDRIVE%:\GENESIS\GENSERVICES" ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO :WUsnf2
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\genICStoreSvr.exe" goto udICSs2
+	ECHO goto ICSsnf2
+	ECHO :udICSs2
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\genICStoreSvr.exe" "%NETDRIVE%:\GENESIS\GENSERVICES" ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO :ICSsnf2
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\genICHQSvr.exe" goto udICHs2
+	ECHO goto ICHsnf2
+	ECHO :udICHs2
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\genICHQSvr.exe" "%NETDRIVE%:\GENESIS\GENSERVICES" ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO :ICHsnf2
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\genBranchSvr.exe" goto udbras1
+	ECHO goto brasnf1
+	ECHO :udbras1
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\genBranchSvr.exe" "%NETDRIVE%:\GENESIS\GENSERVICES" ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO :brasnf1
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\GenHOSvr.exe" goto udHOs1
+	ECHO goto HOsnf1
+	ECHO :udHOs1
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\GenHOSvr.exe" "%NETDRIVE%:\GENESIS\GENSERVICES" ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO :HOsnf1
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\LOGO.ico" goto udLOGO
+	ECHO goto LOGONF
+	ECHO :udLOGO
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\LOGO.ico" "%NETDRIVE%:\GENESIS\GENESIS INSTALL FILES" ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO :LOGONF
+	
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\genSvrReg.exe" goto udSVR
+	ECHO goto SVRNF
+	ECHO :udSVR
+	ECHO move /Y "%NETDRIVE%:\GENESIS\TEMP EXE\genSvrReg.exe" "%NETDRIVE%:\GENESIS\GENESIS INSTALL FILES" ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO :SVRNF
+	
+	ECHO cls
+	ECHO @echo ***** FILES THAT IS UPDATED ***** ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO set path="c:\windows\system32\"
+	ECHO @echo _______FILES THAT IS UPDATED_______
+	ECHO echo.
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\TEMP EXE\*.exe" "%NETDRIVE%:\GENESIS" /D /Y /C /R /L
+	ECHO @echo ____________________________________________________________________________________________^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO echo. ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO xcopy /h "%NETDRIVE%:\GENESIS\TEMP EXE\*.exe" "%NETDRIVE%:\GENESIS" /D /Y /C /R ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO @echo ===================
+	ECHO @echo == UPDATE IS DONE==
+	ECHO @echo ===================
+	ECHO @echo _____________________________________________________________________________________________^>^> "%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO @echo DONE ^>^> "%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO echo.
+	ECHO if exist "%NETDRIVE%:\GENESIS\TEMP EXE\SqlUpdate.bat" goto UPSQL
+	ECHO goto SQLUPNF
+	ECHO :UPSQL
+	ECHO @echo *****DO YOU WHANT TO RUN SQL UPDATE SCRIPTS Y/N*****
+	ECHO set /P INPUT=TYPE OPTION: %=%
+	ECHO if %%INPUT%%==Y goto YES
+	ECHO if %%INPUT%%==y goto YES
+	ECHO if %%INPUT%%==%%INPUT%% goto NO
+	ECHO :YES
+	ECHO "%NETDRIVE%:\GENESIS\TEMP EXE\SqlUpdate.bat"
+	ECHO ping 127.0.0.1 -n 5 ^> nul
+	ECHO del "%NETDRIVE%:\GENESIS\TEMP EXE\SqlUpdate.bat"
+	ECHO :SQLUPNF
+	ECHO :NO
+	ECHO del "%NETDRIVE%:\GENESIS\TEMP EXE\*.exe" /Q ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO del "%NETDRIVE%:\GENESIS\TEMP EXE\*.rar" /Q ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO del "%NETDRIVE%:\GENESIS\TEMP EXE\*.tmp" /Q ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO del "%NETDRIVE%:\GENESIS\TEMP EXE\*.ico" /Q ^>^>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO del "%NETDRIVE%:\GENESIS\TEMP EXE\*.sql"
+	ECHO "%NETDRIVE%:\GENESIS\TEMP EXE\UPDATElog.txt"
+	ECHO exit
+	ECHO :error1
+	ECHO CLS
+	ECHO ECHO ********************************
+	ECHO ECHO * WINRAR 32bit IS NOT INSTALLED*
+	ECHO ECHO ********************************
+	ECHO pause
+)>"%NETDRIVE%:\GENESIS\TEMP EXE\UPDATE-GENESIS.bat"
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = "%HOMEDRIVE%%HOMEPATH%\Desktop\UPDATE-GENESIS.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "%NETDRIVE%:\GENESIS\TEMP EXE\UPDATE-GENESIS.bat" >> CreateShortcut.vbs
+echo olink.workingdirectory = "%NETDRIVE%:\GENESIS\TEMP EXE" >> CreateShortcut.vbs
+echo olink.IconLocation ="C:\GENESIS\INSTALL\LOGO.ico" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
+cscript CreateShortcut.vbs
+del CreateShortcut.vbs
+goto menu
+
+=============================================================================================================
+:FINISH
+cls
+@echo ***** CREATE TIME SYNC TASK *****
+schtasks /create /sc hourly /st 00:05:00 /tn "TimeSync" /tr c:\scripts\Synctime.bat
+@echo ***** REGISTERING midas.dll *****
+@echo ***** REGISTERING midas.dll *****>>"c:\scripts\installlog.txt"
+regsvr32 "c:\GENESIS\INSTALL\midas.dll" >>"c:\scripts\installlog.txt"
+@echo ***** IMPORT REGION SETTINGS ***** 
+Reg import "C:\GENESIS\INSTALL\REGION.REG"
+COLOR 0A
+ping 127.0.0.1 -n 3 > nul
+cls
+@ECHO "**********SETUP COMPLETE**********"
+ping 127.0.0.1 -n 5 > nul
